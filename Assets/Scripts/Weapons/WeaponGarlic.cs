@@ -42,7 +42,7 @@ public class WeaponGarlic : WeaponBase
             if (CircleHit.Hit(pos, r, e.transform.position, e.Radius))
             {
                 // 不击退：大蒜若击退会把怪推出自己的光环（自相矛盾）；击退交给飞刀
-                e.TakeDamage(Damage, Vector3.zero);
+                e.TakeDamage(FinalDamage, Vector3.zero);
             }
         }
     }

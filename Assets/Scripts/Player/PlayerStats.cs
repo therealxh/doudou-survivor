@@ -9,8 +9,10 @@ public class PlayerStats : MonoBehaviour
 {
     public float MaxHp = 100f;
     public float Hp { get; private set; }
+    public float AttackMult = 1f;  // 攻击力倍率（升级被动加成）
+    public float PickupMult = 1f;  // 拾取范围倍率（升级被动加成）
     public float Radius = 0.5f;         // 接触判定半径
-    public float PickupRange = 2.5f;    // 磁铁吸附范围（Day 7 使用）
+    public float PickupRange = 3.5f;    // 磁铁吸附范围（升级被动可放大）
     public float InvulDuration = 0.5f;  // 受击后无敌时间（秒）
 
     private float _invulTimer;
@@ -88,5 +90,11 @@ public class PlayerStats : MonoBehaviour
             Hp = 0f;
             GameManager.I.EndRun(false); // 血尽 → 结算（Day 9 接面板）
         }
+    }
+
+    /// <summary>回复生命（升级被动用）。</summary>
+    public void Heal(float v)
+    {
+        Hp = Mathf.Min(MaxHp, Hp + v);
     }
 }

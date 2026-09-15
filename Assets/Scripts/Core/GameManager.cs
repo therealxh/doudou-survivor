@@ -29,6 +29,9 @@ public class GameManager : MonoBehaviour
     /// <summary>空间哈希（三件套②）：每帧末重建，供子弹/大蒜做邻近查询。</summary>
     public readonly SpatialHashGrid Grid = new SpatialHashGrid();
 
+    /// <summary>成长系统（Bootstrap 装配时注入）。</summary>
+    public LevelSystem Levels { get; set; }
+
     /// <summary>单局时长上限（秒）：到时按胜利结算。</summary>
     public float RunDuration = 600f;
 

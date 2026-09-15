@@ -22,6 +22,9 @@ public static class GameBootstrap
     /// <summary>伤害飘字模板（TextMesh）。</summary>
     public static GameObject DamageNumberTemplate { get; private set; }
 
+    /// <summary>手雷模板（Day 7 升级获取的武器）。</summary>
+    public static GameObject GrenadeTemplate { get; private set; }
+
     /// <summary>敌人模板（Spawner 批量生成用）。</summary>
     public static GameObject EnemyTemplate { get; private set; }
 
@@ -30,6 +33,7 @@ public static class GameBootstrap
     public static ObjectPool<Projectile> KnifePool { get; private set; }
     public static ObjectPool<ExperienceGem> GemPool { get; private set; }
     public static ObjectPool<DamageNumber> DamageNumberPool { get; private set; }
+    public static ObjectPool<Grenade> GrenadePool { get; private set; } // Day 7：手雷
 
     /// <summary>浮动摇杆（Bootstrap 创建后注入 PlayerController）。</summary>
     public static FloatingJoystick Joystick { get; private set; }
@@ -89,9 +93,10 @@ public static class GameBootstrap
         if (GameManager.I == null)
         {
             var gmGo = new GameObject("GameManager");
-            gmGo.AddComponent<GameManager>();
+            var gm = gmGo.AddComponent<GameManager>();
             gmGo.AddComponent<EnemySpawner>(); // Day 4 起由刷怪管理器接管敌人生成
             gmGo.AddComponent<PerfStats>();    // 性能数据采集（每 5s 输出 Console）
+            gm.Levels = gmGo.AddComponent<LevelSystem>(); // Day 7：成长系统（经验/升级三选一）
         }
     }
 
@@ -165,6 +170,63 @@ public static class GameBootstrap
         hint.alignment = TextAnchor.UpperCenter;
         hint.color = new Color(1f, 1f, 1f, 0.75f);
         hint.text = "WASD / 按住屏幕拖动 移动";
+
+        BuildLevelUpPanel(canvasGo.transform); // Day 7：升级三选一面板（默认隐藏）
+    }
+
+    // ---------- 升级三选一面板（Day 7） ----------
+    private static void BuildLevelUpPanel(Transform canvas)
+    {
+        var panelRoot = NewUIObject("LevelUpPanel", canvas);
+        StretchFull((RectTransform)panelRoot.transform);
+        var mask = panelRoot.AddComponent<Image>();
+        mask.color = new Color(0f, 0f, 0f, 0.62f); // 半透明遮罩（同时阻挡下层摇杆输入）
+
+        var panel = panelRoot.AddComponent<LevelUpPanel>();
+        var btns = new Button[3];
+        var titles = new Text[3];
+        var descs = new Text[3];
+
+        NewText(panelRoot.transform, "升级！选择一项强化", 54, new Vector2(0f, 470f), new Color(1f, 0.95f, 0.6f));
+
+        for (int i = 0; i < 3; i++)
+        {
+            var bGo = NewUIObject("Option" + i, panelRoot.transform);
+            var bRt = (RectTransform)bGo.transform;
+            bRt.sizeDelta = new Vector2(780f, 200f);
+            bRt.anchoredPosition = new Vector2(0f, 230f - i * 240f);
+            var img = bGo.AddComponent<Image>();
+            img.color = new Color(0.13f, 0.18f, 0.28f, 0.96f);
+            var btn = bGo.AddComponent<Button>();
+            btns[i] = btn;
+
+            titles[i] = NewText(bGo.transform, "", 46, new Vector2(0f, 40f), Color.white);
+            descs[i] = NewText(bGo.transform, "", 32, new Vector2(0f, -42f), new Color(0.75f, 0.80f, 0.85f));
+
+            int idx = i;
+            btn.onClick.AddListener(() => panel.OnPick(idx));
+        }
+
+        panel.Wire(panelRoot, btns, titles, descs);
+        panelRoot.SetActive(false);
+    }
+
+    /// <summary>快速创建一个居中 UI 文本。</summary>
+    private static Text NewText(Transform parent, string content, int size, Vector2 anchoredPos, Color color)
+    {
+        var go = NewUIObject("Text", parent);
+        var rt = (RectTransform)go.transform;
+        rt.sizeDelta = new Vector2(760f, 90f);
+        rt.anchoredPosition = anchoredPos;
+        var t = go.AddComponent<Text>();
+        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        t.fontSize = size;
+        t.alignment = TextAnchor.MiddleCenter;
+        t.color = color;
+        t.text = content;
+        t.horizontalOverflow = HorizontalWrapMode.Overflow;
+        t.verticalOverflow = VerticalWrapMode.Overflow;
+        return t;
     }
 
     // ---------- 对象模板 ----------
@@ -184,6 +246,11 @@ public static class GameBootstrap
         GemTemplate = MakeBox("GemTemplate", new Vector3(0.3f, 0.3f, 0.3f), new Color(0.25f, 0.85f, 0.90f));
         GemTemplate.AddComponent<ExperienceGem>();
         GemTemplate.SetActive(false);
+
+        // 手雷模板（Day 7：升级获取的武器，飞行体到达后范围爆炸）
+        GrenadeTemplate = MakeSprite("bomb", 0.5f, false);
+        GrenadeTemplate.AddComponent<Grenade>();
+        GrenadeTemplate.SetActive(false);
 
         // 伤害飘字模板（TextMesh 世界空间文本）
         DamageNumberTemplate = new GameObject("DamageNumberTemplate");
@@ -207,6 +274,7 @@ public static class GameBootstrap
         KnifePool = new ObjectPool<Projectile>(() => Object.Instantiate(KnifeTemplate).GetComponent<Projectile>(), 50);
         GemPool = new ObjectPool<ExperienceGem>(() => Object.Instantiate(GemTemplate).GetComponent<ExperienceGem>(), 150);
         DamageNumberPool = new ObjectPool<DamageNumber>(() => Object.Instantiate(DamageNumberTemplate).GetComponent<DamageNumber>(), 30);
+        GrenadePool = new ObjectPool<Grenade>(() => Object.Instantiate(GrenadeTemplate).GetComponent<Grenade>(), 10);
     }
 
     // ---------- 玩家 ----------
@@ -224,7 +292,7 @@ public static class GameBootstrap
         stats.Radius = 0.5f; // 手算接触判定半径
 
         Player.AddComponent<WeaponKnife>();
-        Player.AddComponent<WeaponGarlic>(); // 临时：开局携带大蒜（Day 7 升级系统上线后改为升级获取）
+        // 大蒜/手雷改为成长系统获取（Day 7：升级三选一）
     }
 
     // ---------- 贴图与 Sprite（美术资源） ----------

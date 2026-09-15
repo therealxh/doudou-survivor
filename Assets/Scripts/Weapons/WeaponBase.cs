@@ -36,6 +36,39 @@ public abstract class WeaponBase : MonoBehaviour
     /// <summary>子类实现：一次开火。</summary>
     protected abstract void Fire();
 
+    private PlayerStats _stats;
+
+    /// <summary>最终伤害 = 基础伤害 × 攻击力倍率（升级被动加成）。</summary>
+    protected float FinalDamage
+    {
+        get
+        {
+            if (_stats == null)
+            {
+                _stats = GetComponent<PlayerStats>();
+            }
+            return Damage * (_stats != null ? _stats.AttackMult : 1f);
+        }
+    }
+
+    /// <summary>升级接口：提升伤害（升级池调用）。</summary>
+    public void AddDamage(float v)
+    {
+        Damage += v;
+    }
+
+    /// <summary>升级接口：缩短冷却（带下限保护）。</summary>
+    public void AddCooldown(float v)
+    {
+        Cooldown = Mathf.Max(0.2f, Cooldown - v);
+    }
+
+    /// <summary>升级接口：扩大范围/半径。</summary>
+    public void AddRange(float v)
+    {
+        Range += v;
+    }
+
     /// <summary>
     /// 获取当前应攻击的目标：优先维持已锁定目标；
     /// 若锁定目标超出射程，改打“射程内的最近目标”（避免武器死等远处目标、看起来像哑火）；
