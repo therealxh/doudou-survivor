@@ -16,6 +16,12 @@ public static class GameBootstrap
     /// <summary>飞刀子弹模板（未激活，供 Instantiate / Day 5 对象池使用）。</summary>
     public static GameObject KnifeTemplate { get; private set; }
 
+    /// <summary>经验宝石模板。</summary>
+    public static GameObject GemTemplate { get; private set; }
+
+    /// <summary>伤害飘字模板（TextMesh）。</summary>
+    public static GameObject DamageNumberTemplate { get; private set; }
+
     /// <summary>浮动摇杆（Bootstrap 创建后注入 PlayerController）。</summary>
     public static FloatingJoystick Joystick { get; private set; }
 
@@ -158,6 +164,25 @@ public static class GameBootstrap
         rb.isKinematic = true;
         KnifeTemplate.AddComponent<Projectile>();
         KnifeTemplate.SetActive(false); // 模板不参与游戏，仅供实例化
+
+        // 经验宝石模板
+        GemTemplate = MakeBox("GemTemplate", new Vector3(0.3f, 0.3f, 0.3f), new Color(0.25f, 0.85f, 0.90f));
+        GemTemplate.AddComponent<ExperienceGem>();
+        GemTemplate.SetActive(false);
+
+        // 伤害飘字模板（TextMesh 世界空间文本）
+        DamageNumberTemplate = new GameObject("DamageNumberTemplate");
+        var tm = DamageNumberTemplate.AddComponent<TextMesh>();
+        tm.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        tm.fontSize = 40;
+        tm.characterSize = 0.08f;
+        tm.anchor = TextAnchor.MiddleCenter;
+        tm.alignment = TextAlignment.Center;
+        tm.color = Color.white;
+        DamageNumberTemplate.GetComponent<MeshRenderer>().sharedMaterial = tm.font.material;
+        DamageNumberTemplate.transform.rotation = Quaternion.Euler(55f, 0f, 0f); // 面向相机
+        DamageNumberTemplate.AddComponent<DamageNumber>();
+        DamageNumberTemplate.SetActive(false);
     }
 
     // ---------- 玩家 ----------
@@ -166,11 +191,17 @@ public static class GameBootstrap
         Player = MakeBox("Player", new Vector3(1f, 1f, 1f), new Color(0.30f, 0.55f, 0.95f), keepCollider: true);
         Player.transform.position = new Vector3(0f, 0.5f, 0f);
 
+        // 朴素版接触伤害：玩家 = Trigger Collider + Kinematic Rigidbody（Day 5 弃 Physics）
+        Player.GetComponent<Collider>().isTrigger = true;
+        var rb = Player.AddComponent<Rigidbody>();
+        rb.isKinematic = true;
+
         var pc = Player.AddComponent<PlayerController>();
         pc.Radius = 0.5f;
         pc.MoveSpeed = 5f;
         pc.Joystick = Joystick;
 
+        Player.AddComponent<PlayerStats>();
         Player.AddComponent<WeaponKnife>();
     }
 
