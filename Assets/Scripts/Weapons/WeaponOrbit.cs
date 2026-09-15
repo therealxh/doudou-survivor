@@ -17,8 +17,8 @@ public class WeaponOrbit : WeaponBase
     {
         DisplayName = "环绕飞刃";
         Cooldown = 0.5f;
-        Range = 1.7f; // 环绕半径
-        Damage = 3f;  // 每 0.4s 的扫击伤害
+        Range = 1.55f; // 环绕半径（Day 8 配平：1.7→1.55，更贴身）
+        Damage = 5f;   // 每 0.4s 的扫击伤害（Day 8 配平：3→5，基础值提升）
     }
 
     protected override void Fire()
@@ -52,6 +52,6 @@ public class WeaponOrbit : WeaponBase
 
     protected override void OnUpgrade()
     {
-        Damage += 2f;
+        Damage += 3f;
     }
 }

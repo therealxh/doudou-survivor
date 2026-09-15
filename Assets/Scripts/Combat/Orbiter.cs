@@ -7,11 +7,11 @@ using UnityEngine;
 /// </summary>
 public class Orbiter : MonoBehaviour
 {
-    public float DamagePerHit = 3f;
-    public float HitInterval = 0.4f;
-    public float OrbitRadius = 1.7f;
+    public float DamagePerHit = 5f;
+    public float HitInterval = 0.2f; // 扫击间隔（Day 8 二次配平：0.4→0.2，令刀刃经过即命中）
+    public float OrbitRadius = 1.55f;
     public float OrbitSpeed = 200f;  // 度/秒
-    public float Radius = 0.35f;     // 命中判定半径
+    public float Radius = 0.55f;     // 命中判定半径（Day 8 配平：0.35→0.55，贴脸怪也能砍到）
     public float PhaseDeg;           // 初始相位（多枚均分，由 WeaponOrbit 设置）
 
     private float _angle;

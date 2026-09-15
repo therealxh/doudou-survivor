@@ -222,9 +222,9 @@ public class LevelSystem : MonoBehaviour
             {
                 _pool.Add(new UpgradeOption
                 {
-                    Title = "环绕飞刃 · 伤害 +2",
+                    Title = "环绕飞刃 · 伤害 +3",
                     Desc = "扫击伤害提升（当前等级 " + _orbitDmg + "/3）",
-                    Apply = () => { _orbitDmg++; _orbit.AddDamage(2f); },
+                    Apply = () => { _orbitDmg++; _orbit.AddDamage(3f); },
                 });
             }
             if (_orbitCount < 2)
