@@ -14,17 +14,15 @@ public class Enemy : MonoBehaviour
     public float KnockbackSpeed = 6f;  // 受击击退初速（m/s）
     public float StunDuration = 0.2f;  // 受击硬直：击退期间暂停追击，让击退看得清
 
-    private Material _mat;          // 独享材质实例（闪白用）
-    private Color _baseColor;
+    private SpriteRenderer _sr;     // 闪白：SpriteRenderer.color 直接染色（过曝白），无需材质实例
+    private static readonly Color FlashColor = new Color(2f, 2f, 2f);
     private float _flashTimer;
     private float _stunTimer;       // 受击硬直剩余时间
     private Vector3 _knockVel;      // 击退速度脉冲（快速衰减）
 
     private void Awake()
     {
-        var r = GetComponent<Renderer>();
-        _baseColor = r.sharedMaterial.GetColor("_BaseColor"); // 基色从共享材质读
-        _mat = r.material; // 克隆独享实例
+        _sr = GetComponent<SpriteRenderer>();
     }
 
     private void OnEnable()
@@ -39,9 +37,9 @@ public class Enemy : MonoBehaviour
         _flashTimer = 0f;
         _stunTimer = 0f;
         _knockVel = Vector3.zero;
-        if (_mat != null)
+        if (_sr != null)
         {
-            _mat.SetColor("_BaseColor", _baseColor);
+            _sr.color = Color.white;
         }
     }
 
@@ -66,7 +64,7 @@ public class Enemy : MonoBehaviour
             _flashTimer -= Time.deltaTime;
             if (_flashTimer <= 0f)
             {
-                _mat.SetColor("_BaseColor", _baseColor);
+                _sr.color = Color.white;
             }
         }
 
@@ -98,7 +96,7 @@ public class Enemy : MonoBehaviour
         if (dir.sqrMagnitude > 0.0001f)
         {
             transform.position += dir.normalized * (MoveSpeed * Time.deltaTime);
-            transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+            transform.rotation = GameBootstrap.FlatRotation(dir);
         }
     }
 
@@ -115,7 +113,7 @@ public class Enemy : MonoBehaviour
         }
 
         // 闪白 + 击退 + 硬直
-        _mat.SetColor("_BaseColor", Color.white);
+        _sr.color = FlashColor;
         _flashTimer = 0.1f;
         _stunTimer = StunDuration;
 

@@ -50,7 +50,7 @@ public class WeaponKnife : WeaponBase
         Vector3 spawnPos = new Vector3(transform.position.x, 0.5f, transform.position.z) + dir * offset;
         var proj = GameBootstrap.KnifePool.Get();
         proj.transform.position = spawnPos;
-        proj.transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+        proj.transform.rotation = GameBootstrap.FlatRotation(dir);
         proj.speed = 12f;
         proj.range = Range;
         proj.Launch(dir, Damage);

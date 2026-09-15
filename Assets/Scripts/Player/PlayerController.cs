@@ -24,7 +24,7 @@ public class PlayerController : MonoBehaviour
         // 移动时转向移动方向（视觉反馈）
         if (move.sqrMagnitude > 0.01f)
         {
-            transform.rotation = Quaternion.LookRotation(move, Vector3.up);
+            transform.rotation = GameBootstrap.FlatRotation(move);
         }
     }
 

@@ -15,15 +15,12 @@ public class PlayerStats : MonoBehaviour
 
     private float _invulTimer;
     private float _flashTimer;
-    private Material _mat;
-    private Color _baseColor;
+    private SpriteRenderer _sr;
 
     private void Awake()
     {
         Hp = MaxHp;
-        var r = GetComponent<Renderer>();
-        _baseColor = r.sharedMaterial.GetColor("_BaseColor");
-        _mat = r.material; // 独享实例：受击闪红用
+        _sr = GetComponent<SpriteRenderer>();
     }
 
     private void Update()
@@ -42,7 +39,7 @@ public class PlayerStats : MonoBehaviour
             _flashTimer -= Time.deltaTime;
             if (_flashTimer <= 0f)
             {
-                _mat.SetColor("_BaseColor", _baseColor);
+                _sr.color = Color.white;
             }
         }
 
@@ -83,8 +80,7 @@ public class PlayerStats : MonoBehaviour
         Hp -= dmg;
         _invulTimer = InvulDuration;
 
-        // 受击闪红
-        _mat.SetColor("_BaseColor", new Color(1f, 0.45f, 0.45f));
+        _sr.color = new Color(1f, 0.45f, 0.45f); // 受击闪红
         _flashTimer = 0.12f;
 
         if (Hp <= 0f)

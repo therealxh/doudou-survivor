@@ -35,6 +35,7 @@ public static class GameBootstrap
     public static FloatingJoystick Joystick { get; private set; }
 
     private static readonly Dictionary<Color, Material> MatCache = new Dictionary<Color, Material>();
+    private static readonly Dictionary<string, Sprite> SpriteCache = new Dictionary<string, Sprite>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Init()
@@ -170,12 +171,12 @@ public static class GameBootstrap
     private static void BuildTemplates()
     {
         // 子弹模板（Day 5 起全手算碰撞，无需 Collider/Rigidbody）
-        KnifeTemplate = MakeBox("KnifeTemplate", new Vector3(0.4f, 0.25f, 0.4f), new Color(0.95f, 0.92f, 0.6f));
+        KnifeTemplate = MakeSprite("arrow", 0.6f);
         KnifeTemplate.AddComponent<Projectile>();
         KnifeTemplate.SetActive(false); // 模板不参与游戏，仅供池实例化
 
         // 敌人模板（Spawner 批量生成用）
-        EnemyTemplate = MakeBox("EnemyTemplate", new Vector3(0.8f, 0.8f, 0.8f), new Color(0.85f, 0.32f, 0.30f));
+        EnemyTemplate = MakeSprite("enemy", 0.9f);
         EnemyTemplate.AddComponent<Enemy>();
         EnemyTemplate.SetActive(false);
 
@@ -211,7 +212,7 @@ public static class GameBootstrap
     // ---------- 玩家 ----------
     private static void BuildPlayer()
     {
-        Player = MakeBox("Player", new Vector3(1f, 1f, 1f), new Color(0.30f, 0.55f, 0.95f));
+        Player = MakeSprite("player", 1.15f);
         Player.transform.position = new Vector3(0f, 0.5f, 0f);
 
         var pc = Player.AddComponent<PlayerController>();
@@ -224,6 +225,50 @@ public static class GameBootstrap
 
         Player.AddComponent<WeaponKnife>();
         Player.AddComponent<WeaponGarlic>(); // 临时：开局携带大蒜（Day 7 升级系统上线后改为升级获取）
+    }
+
+    // ---------- 贴图与 Sprite（美术资源） ----------
+    /// <summary>运行时加载贴图并创建 Sprite（走 Resources，不依赖导入设置）。</summary>
+    public static Sprite LoadSprite(string name)
+    {
+        if (SpriteCache.TryGetValue(name, out var cached) && cached != null)
+        {
+            return cached;
+        }
+        var tex = Resources.Load<Texture2D>("Sprites/" + name);
+        if (tex == null)
+        {
+            Debug.LogWarning("[Bootstrap] 未找到贴图: Sprites/" + name);
+            return null;
+        }
+        // PPU = 纹理宽：贴图世界宽度 = 1 单位（再按 size 参数缩放）
+        var sp = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), tex.width);
+        SpriteCache[name] = sp;
+        return sp;
+    }
+
+    /// <summary>创建平躺的 Sprite 实体（俯视视角）；size = 最长边的世界尺寸（米）。</summary>
+    public static GameObject MakeSprite(string spriteName, float size)
+    {
+        var go = new GameObject(spriteName);
+        var sr = go.AddComponent<SpriteRenderer>();
+        sr.sprite = LoadSprite(spriteName);
+        if (sr.sprite != null)
+        {
+            // 按最长边映射：细长贴图（如箭矢）不会被拉成巨物
+            float longest = Mathf.Max(sr.sprite.bounds.size.x, sr.sprite.bounds.size.y);
+            float s = size / longest;
+            go.transform.localScale = new Vector3(s, s, s);
+        }
+        go.transform.rotation = Quaternion.Euler(-90f, 0f, 0f); // 平躺：图“上”朝 -z
+        return go;
+    }
+
+    /// <summary>平躺 Sprite 的朝向旋转：图“上”指向 dir 的水平方向。</summary>
+    public static Quaternion FlatRotation(Vector3 dir)
+    {
+        float yaw = Mathf.Atan2(-dir.x, -dir.z) * Mathf.Rad2Deg;
+        return Quaternion.Euler(0f, yaw, 0f) * Quaternion.Euler(-90f, 0f, 0f);
     }
 
     // ---------- 公共工具 ----------
