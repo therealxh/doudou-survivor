@@ -54,17 +54,19 @@ Input System 包、DOTween、EventBus、Cinemachine、Unity Physics（碰撞全�
 - 屏幕：竖屏 1080×1920
 - 渲染：几何体 + 纯色材质；怪物程序化动画（缩放呼吸 + 朝向摆动）
 - 输入：旧版 Input API + UGUI 摇杆（触屏与鼠标指针统一走 EventSystem 拖拽）
-- 场景：单场景（Main）；重开 = 场景重载
+- 场景：单场景 `SampleScene`（零资产修改）；重开 = SceneManager.LoadScene；全部游戏对象由 GameBootstrap 运行时构建
 
 ---
 
 ## 4. 工程结构
 
-### 4.1 脚本清单（Assets/Scripts/，共 21 个文件，预计合计 1500~2000 行含注释）
+### 4.1 脚本清单（Assets/Scripts/，共 23 个文件，预计合计 1500~2200 行含注释）
 
 | 模块 | 文件 | 职责 | 重做档 |
 |------|------|------|--------|
+| Core | GameBootstrap.cs | 运行时入口：代码装配相机/地面/材质/玩家/模板/管理器（零资产手术） | P1 |
 | Core | GameManager.cs | 状态机（Playing/LevelUp/GameOver）、时停（timeScale）、胜负流程 | P1 |
+| Core | PerfStats.cs | 开发验证工具：每 5s 输出帧时间 / DrawCall / GC Alloc（读 ProfilerRecorder） | P2 只读 |
 | Core | ObjectPool.cs | 泛型对象池（三件套①） | P0-a |
 | Core | SpatialHashGrid.cs | 空间哈希（三件套②） | P0-a |
 | Core | CircleHit.cs | 距离平方圆形碰撞（三件套③） | P0-a |
@@ -86,9 +88,10 @@ Input System 包、DOTween、EventBus、Cinemachine、Unity Physics（碰撞全�
 | UI | LevelUpPanel.cs | 三选一面板 | P2 只读 |
 | UI | GameOverPanel.cs | 结算 + 重开 | P2 只读 |
 
-### 4.2 场景与预制体
-- 场景：`Main.unity` — 游戏管理器、相机、三层 Canvas（HUD / 升级面板 / 结算面板）、地面
-- 预制体：Player、Enemy、Knife、Gem、DamageNumber、Joystick
+### 4.2 场景与对象组装（全代码构建风格）
+- 场景：`SampleScene` 零资产修改（不手术 .unity / .prefab / .asset 的 YAML）；游戏对象全部由 `GameBootstrap`（RuntimeInitializeOnLoadMethod + SceneManager.sceneLoaded）在运行时构建：相机、地面、材质、玩家、对象模板、UI
+- 对象模板：Player、Enemy、Knife、Gem、DamageNumber、Joystick 均为代码构建的 GameObject 模板（无 prefab 资产）
+- 重开 = SceneManager.LoadScene 后自动重新构建
 - 无 ScriptableObject 资产（已砍）
 
 ### 4.3 目录结构
