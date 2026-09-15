@@ -223,6 +223,7 @@ public static class GameBootstrap
         stats.Radius = 0.5f; // 手算接触判定半径
 
         Player.AddComponent<WeaponKnife>();
+        Player.AddComponent<WeaponGarlic>(); // 临时：开局携带大蒜（Day 7 升级系统上线后改为升级获取）
     }
 
     // ---------- 公共工具 ----------

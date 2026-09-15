@@ -11,7 +11,7 @@ public class WeaponKnife : WeaponBase
         DisplayName = "飞刀";
         Cooldown = 0.8f;
         Range = 6f;
-        Damage = 10f;
+        Damage = 12f; // 12 伤：开局两分钟内一刀一只（怪 HP 10×1.1^分钟，超 12 后变两刀）
     }
 
     protected override void Fire()

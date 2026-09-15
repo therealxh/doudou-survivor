@@ -37,8 +37,9 @@ public abstract class WeaponBase : MonoBehaviour
     protected abstract void Fire();
 
     /// <summary>
-    /// 获取当前应攻击的目标：优先维持已锁定目标（活着且在射程内），
-    /// 否则在射程内找最近目标并锁定。
+    /// 获取当前应攻击的目标：优先维持已锁定目标；
+    /// 若锁定目标超出射程，改打“射程内的最近目标”（避免武器死等远处目标、看起来像哑火）；
+    /// 换不到则保持锁定（等它跑回射程）。
     /// </summary>
     protected Enemy FindNearest()
     {
@@ -48,18 +49,37 @@ public abstract class WeaponBase : MonoBehaviour
             return null;
         }
 
-        // 优先维持锁定：解决了"小怪群推挤、最近目标每刀切换→火力分散打不死"的问题
+        Enemy inRange = FindNearestInRange();
+
         if (IsValidTarget(_lockTarget))
         {
-            return _lockTarget;
+            float d = (_lockTarget.transform.position - transform.position).sqrMagnitude;
+            if (d <= Range * Range)
+            {
+                return _lockTarget; // 锁定目标在射程内：维持压制
+            }
+            if (inRange != null)
+            {
+                _lockTarget = inRange; // 锁定目标超程：改打眼前的目标
+                return inRange;
+            }
+            return _lockTarget; // 没有其他目标：保持锁定等它回来
         }
 
+        _lockTarget = inRange;
+        return inRange;
+    }
+
+    /// <summary>在射程内找最近目标（射程外开火是浪费弹药）。</summary>
+    private Enemy FindNearestInRange()
+    {
         Enemy best = null;
-        float bestSqr = Range * Range; // 只考虑射程内的目标（射程外开火是浪费弹药）
+        float bestSqr = Range * Range;
         Vector3 pos = transform.position;
-        for (int i = 0; i < gm.Enemies.Count; i++)
+        var enemies = GameManager.I.Enemies;
+        for (int i = 0; i < enemies.Count; i++)
         {
-            var e = gm.Enemies[i];
+            var e = enemies[i];
             if (e == null)
             {
                 continue;
@@ -71,7 +91,6 @@ public abstract class WeaponBase : MonoBehaviour
                 best = e;
             }
         }
-        _lockTarget = best;
         return best;
     }
 
@@ -89,8 +108,6 @@ public abstract class WeaponBase : MonoBehaviour
         {
             return false; // 已死亡
         }
-        // 刻意不检查距离：目标在追玩家，被击退后必然回到射程；
-        // 以“距离”作失效条件会导致锁定在怪群边缘频繁切换→火力永远打在满血新怪上。
         return true;
     }
 
