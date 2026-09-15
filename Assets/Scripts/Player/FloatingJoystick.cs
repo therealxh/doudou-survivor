@@ -25,6 +25,11 @@ public class FloatingJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler
 
     public void OnPointerDown(PointerEventData e)
     {
+        // 非游戏中（升级时停/结算）：不响应摇杆，避免抢走面板点击
+        if (GameManager.I == null || GameManager.I.State != GameState.Playing)
+        {
+            return;
+        }
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_area, e.position, e.pressEventCamera, out var lp))
         {
             return;

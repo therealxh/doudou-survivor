@@ -191,6 +191,12 @@ public static class GameBootstrap
     {
         var panelRoot = NewUIObject("LevelUpPanel", canvas);
         StretchFull((RectTransform)panelRoot.transform);
+        // 面板必须显示在所有 UI 之上：独立排序组 + 自带射线器
+        // （否则摇杆层独占射线，升级面板点击无响应——游戏看起来“卡死”）
+        var topCanvas = panelRoot.AddComponent<Canvas>();
+        topCanvas.overrideSorting = true;
+        topCanvas.sortingOrder = 10;
+        panelRoot.AddComponent<GraphicRaycaster>();
         var mask = panelRoot.AddComponent<Image>();
         mask.color = new Color(0f, 0f, 0f, 0.62f); // 半透明遮罩（同时阻挡下层摇杆输入）
 
