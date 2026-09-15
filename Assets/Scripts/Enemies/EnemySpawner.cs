@@ -7,12 +7,12 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
     public float BaseInterval = 1.0f;       // 初始刷怪间隔（秒）
-    public float IntervalDecayPerMin = 0.1f; // 每分钟减少
+    public float IntervalDecayPerMin = 0.12f; // 每分钟减少（Day 8 配平：0.1 → 0.12，压力爬升更快）
     public float MinInterval = 0.2f;        // 间隔下限
     public int MaxAlive = 300;              // 同屏上限
 
-    public float BaseEnemyHp = 10f;         // 初始怪血量（开局一下一只；中后期靠曲线变肉，对冲玩家成长）
-    public float HpGrowthPerMinute = 1.1f;  // 每分钟 ×1.1（复合）
+    public float BaseEnemyHp = 10f;         // 初始怪血量（开局可一刀；中后期靠曲线变肉，对冲玩家成长）
+    public float HpGrowthPerMinute = 1.15f; // 每分钟 ×1.15（Day 8 配平：1.1 → 1.15，成长更快）
     public float EnemySpeed = 2.2f;
     public float EnemyRadius = 0.4f;
 

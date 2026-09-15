@@ -25,6 +25,9 @@ public static class GameBootstrap
     /// <summary>手雷模板（Day 7 升级获取的武器）。</summary>
     public static GameObject GrenadeTemplate { get; private set; }
 
+    /// <summary>爆炸视觉模板（Day 8：手雷爆炸圈）。</summary>
+    public static GameObject BlastTemplate { get; private set; }
+
     /// <summary>敌人模板（Spawner 批量生成用）。</summary>
     public static GameObject EnemyTemplate { get; private set; }
 
@@ -34,6 +37,7 @@ public static class GameBootstrap
     public static ObjectPool<ExperienceGem> GemPool { get; private set; }
     public static ObjectPool<DamageNumber> DamageNumberPool { get; private set; }
     public static ObjectPool<Grenade> GrenadePool { get; private set; } // Day 7：手雷
+    public static ObjectPool<BlastEffect> BlastPool { get; private set; } // Day 8：爆炸视觉
 
     /// <summary>浮动摇杆（Bootstrap 创建后注入 PlayerController）。</summary>
     public static FloatingJoystick Joystick { get; private set; }
@@ -252,6 +256,11 @@ public static class GameBootstrap
         GrenadeTemplate.AddComponent<Grenade>();
         GrenadeTemplate.SetActive(false);
 
+        // 爆炸视觉模板（Day 8：手雷爆炸圈）
+        BlastTemplate = MakeSprite("explosion", 1f, false);
+        BlastTemplate.AddComponent<BlastEffect>();
+        BlastTemplate.SetActive(false);
+
         // 伤害飘字模板（TextMesh 世界空间文本）
         DamageNumberTemplate = new GameObject("DamageNumberTemplate");
         var tm = DamageNumberTemplate.AddComponent<TextMesh>();
@@ -275,6 +284,7 @@ public static class GameBootstrap
         GemPool = new ObjectPool<ExperienceGem>(() => Object.Instantiate(GemTemplate).GetComponent<ExperienceGem>(), 150);
         DamageNumberPool = new ObjectPool<DamageNumber>(() => Object.Instantiate(DamageNumberTemplate).GetComponent<DamageNumber>(), 30);
         GrenadePool = new ObjectPool<Grenade>(() => Object.Instantiate(GrenadeTemplate).GetComponent<Grenade>(), 10);
+        BlastPool = new ObjectPool<BlastEffect>(() => Object.Instantiate(BlastTemplate).GetComponent<BlastEffect>(), 8);
     }
 
     // ---------- 玩家 ----------

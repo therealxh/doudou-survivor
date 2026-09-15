@@ -14,6 +14,7 @@ jobs = [
     ("enemy-monster-topdown_1789454241.png", "enemy"),
     ("arrow-projectile-topdown_1789454242.png", "arrow"),
     ("bomb-grenade-topdown_1789457890.png", "bomb"),
+    ("explosion-blast-topdown_1789458634.png", "explosion"),
 ]
 
 for fname, out in jobs:

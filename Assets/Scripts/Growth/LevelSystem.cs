@@ -19,7 +19,7 @@ public class LevelSystem : MonoBehaviour
 {
     public int Level { get; private set; } = 1;
     public float Exp { get; private set; }
-    public float ExpToNext => 5f + (Level - 1) * 3f;
+    public float ExpToNext => 12f + (Level - 1) * 8f; // Day 8 配平：升级节奏拉长（用户反馈升级太快）
 
     private PlayerStats _stats;
     private PlayerController _pc;

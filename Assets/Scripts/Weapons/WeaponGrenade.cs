@@ -9,7 +9,7 @@ public class WeaponGrenade : WeaponBase
     private void Awake()
     {
         DisplayName = "手雷";
-        Cooldown = 2f;
+        Cooldown = 3.5f; // Day 8 配平：2s → 3.5s（用户反馈投掷频率偏高）
         Range = 8f;
         Damage = 15f;
     }

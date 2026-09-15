@@ -8,7 +8,7 @@ using UnityEngine;
 public class Grenade : MonoBehaviour
 {
     public float Speed = 8f;
-    public float BlastRadius = 2f;
+    public float BlastRadius = 3f; // Day 8 配平：2m → 3m（用户反馈范围偏小）
 
     private Vector3 _from;
     private Vector3 _to;
@@ -59,6 +59,9 @@ public class Grenade : MonoBehaviour
     private void Explode()
     {
         _active = false;
+
+        // 爆炸视觉（Day 8）：扩散渐隐圈
+        BlastEffect.Show(transform.position, BlastRadius);
 
         // AOE：空间哈希邻近查询 → CircleHit 精筛
         GameManager.I.Grid.Query(transform.position, BlastRadius + 0.45f, Candidates);
