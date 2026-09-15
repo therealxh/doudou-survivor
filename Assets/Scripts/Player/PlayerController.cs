@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
 {
     public float MoveSpeed = 5f;
     public float Radius = 0.5f;
+    public FloatingJoystick Joystick; // Bootstrap 注入
 
     private void Update()
     {
@@ -29,6 +30,13 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 ReadInput()
     {
+        // 摇杆优先（触屏/鼠标拖动）；否则读键盘
+        Vector2 stick = Joystick != null ? Joystick.Value : Vector2.zero;
+        if (stick.sqrMagnitude > 0.01f)
+        {
+            return stick;
+        }
+
         float x = Input.GetAxisRaw("Horizontal");
         float y = Input.GetAxisRaw("Vertical");
         return new Vector2(x, y);

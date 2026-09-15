@@ -48,4 +48,20 @@ public class Enemy : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
         }
     }
+
+    /// <summary>受击：Day 2 朴素版 = 扣血 + 死亡销毁。Day 3 增加闪白/击退/掉落反馈。</summary>
+    public void TakeDamage(float dmg, Vector3 knockDir)
+    {
+        Hp -= dmg;
+        if (Hp > 0f)
+        {
+            return;
+        }
+
+        if (GameManager.I != null)
+        {
+            GameManager.I.KillCount++;
+        }
+        Destroy(gameObject);
+    }
 }

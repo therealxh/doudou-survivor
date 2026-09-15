@@ -34,7 +34,7 @@
 1. 工程模板错成 2D → 用 Unity Hub 缓存里的官方 `urp-blank` 模板 + 命令行重建（`Unity.exe -batchmode -createProject -cloneFromTemplate`）。
 2. Write 工具写"多层新目录"时偶尔报失败但文件实际已落盘（重试提示 no change 即说明已存在）——先建目录再写更稳。
 3. Unity 批处理与编辑器**不能同时**打开同一工程（编译验证前先确认没有编辑器在跑）。
-4. **敌人出生点悬空 bug**：`Vector3(cos, 0.5, sin) * 10` 会把 y 也乗 10 → 敌人浮在 5 米高。修复：只把 x/z 乘半径（分量分别计算）。教训：对 Vector3 整体缩放前先想清楚每个分量要不要一起变。
+4. **敌人出生点悬空 bug**：`Vector3(cos, 0.5, sin) * 10` 会把 y 也乘 10 → 敌人浮在 5 米高。修复：只把 x/z 乘半径（分量分别计算）。教训：对 Vector3 整体缩放前先想清楚每个分量要不要一起变。
 5. **Unity MCP 中文路径坑（环境级，值得记住）**：MCP for Unity 的 server（Python）用系统默认编码（中文系统=GBK）读 UTF-8 状态文件（内含中文工程路径）→ UnicodeDecodeError 被静默吞掉 → MCP 永远“找不到 Unity 实例”。修复：server 源码的 `open()` 补 `encoding='utf-8'` + mcp.json 加 `PYTHONUTF8=1`。教训：Windows 上处理非 ASCII 路径的工具链都要显式 UTF-8。
 
 ## 关键数字
