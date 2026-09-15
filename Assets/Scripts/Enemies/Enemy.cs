@@ -8,7 +8,7 @@ public class Enemy : MonoBehaviour
 {
     public float Radius = 0.4f;
     public float MoveSpeed = 2.2f;
-    public float Hp = 20f;
+    public float Hp = 10f;
     public float TouchDamage = 5f;     // 接触玩家时的单次伤害
     public float KnockbackSpeed = 6f;  // 受击击退初速（m/s）
     public float StunDuration = 0.2f;  // 受击硬直：击退期间暂停追击，让击退看得清

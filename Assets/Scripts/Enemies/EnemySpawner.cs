@@ -11,7 +11,7 @@ public class EnemySpawner : MonoBehaviour
     public float MinInterval = 0.2f;        // 间隔下限
     public int MaxAlive = 300;              // 同屏上限
 
-    public float BaseEnemyHp = 20f;         // 初始怪血量
+    public float BaseEnemyHp = 10f;         // 初始怪血量（开局一下一只；中后期靠曲线变肉，对冲玩家成长）
     public float HpGrowthPerMinute = 1.1f;  // 每分钟 ×1.1（复合）
     public float EnemySpeed = 2.2f;
     public float EnemyRadius = 0.4f;
