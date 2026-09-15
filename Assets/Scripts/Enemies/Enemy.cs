@@ -8,13 +8,15 @@ public class Enemy : MonoBehaviour
 {
     public float Radius = 0.4f;
     public float MoveSpeed = 2.2f;
-    public float Hp = 10f;
+    public float Hp = 20f;
     public float TouchDamage = 5f;     // 接触玩家时的单次伤害
     public float KnockbackSpeed = 6f;  // 受击击退初速（m/s）
+    public float StunDuration = 0.2f;  // 受击硬直：击退期间暂停追击，让击退看得清
 
     private Material _mat;          // 独享材质实例（闪白用）
     private Color _baseColor;
     private float _flashTimer;
+    private float _stunTimer;       // 受击硬直剩余时间
     private Vector3 _knockVel;      // 击退速度脉冲（快速衰减）
 
     private void Awake()
@@ -65,7 +67,17 @@ public class Enemy : MonoBehaviour
             _knockVel = Vector3.Lerp(_knockVel, Vector3.zero, 8f * Time.deltaTime);
         }
 
-        // 追击玩家
+        // 受击硬直衰减
+        if (_stunTimer > 0f)
+        {
+            _stunTimer -= Time.deltaTime;
+        }
+
+        // 追击玩家（受击硬直期间暂停——否则追击会抵消掉击退的位移）
+        if (_stunTimer > 0f)
+        {
+            return;
+        }
         Transform player = GameBootstrap.Player != null ? GameBootstrap.Player.transform : null;
         if (player == null)
         {
@@ -92,9 +104,10 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        // 闪白 + 击退
+        // 闪白 + 击退 + 硬直
         _mat.SetColor("_BaseColor", Color.white);
         _flashTimer = 0.1f;
+        _stunTimer = StunDuration;
 
         Vector3 dir = knockDir;
         dir.y = 0f;
