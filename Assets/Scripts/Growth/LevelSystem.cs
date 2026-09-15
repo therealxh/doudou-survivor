@@ -34,7 +34,7 @@ public class LevelSystem : MonoBehaviour
     private bool _evolved;
     private int _garlicDmg, _garlicRadius;
     private int _grenadeDmg;
-    private int _orbitDmg, _orbitCount;
+    private int _orbitDmg, _orbitCount, _orbitSpeed;
     private int _boomDmg;
     private int _passAtk, _passMove, _passHp, _passPick;
 
@@ -234,6 +234,15 @@ public class LevelSystem : MonoBehaviour
                     Title = "环绕飞刃 · 数量 +1",
                     Desc = "环绕刀刃更多（当前等级 " + _orbitCount + "/2）",
                     Apply = () => { _orbitCount++; _orbit.Count++; },
+                });
+            }
+            if (_orbitSpeed < 3)
+            {
+                _pool.Add(new UpgradeOption
+                {
+                    Title = "环绕飞刃 · 转速 +25%",
+                    Desc = "刀刃旋转更快（当前等级 " + _orbitSpeed + "/3）",
+                    Apply = () => { _orbitSpeed++; _orbit.SpeedMult += 0.25f; },
                 });
             }
         }

@@ -10,6 +10,7 @@ public class BlastEffect : MonoBehaviour
 
     private float _age;
     private float _radius;
+    private float _endMult = 1.15f;
     private SpriteRenderer _sr;
 
     private void Awake()
@@ -26,19 +27,26 @@ public class BlastEffect : MonoBehaviour
     public static void Show(Vector3 pos, float radius)
     {
         var b = GameBootstrap.BlastPool.Get();
-        b.Setup(pos, radius);
+        b.Setup(pos, radius, "explosion", 1.15f);
     }
 
-    private void Setup(Vector3 pos, float radius)
+    /// <summary>大蒜冲击波（Day 8）：换用波纹贴图、收到判定半径即止。</summary>
+    public static void ShowShockwave(Vector3 pos, float radius)
+    {
+        var b = GameBootstrap.BlastPool.Get();
+        b.Setup(pos, radius, "shockwave", 1f);
+    }
+
+    private void Setup(Vector3 pos, float radius, string spriteName, float endMult)
     {
         _radius = radius;
+        _endMult = endMult;
+        _sr.sprite = GameBootstrap.LoadSprite(spriteName); // 池对象两种用途：显式设置贴图
         transform.position = new Vector3(pos.x, 0.32f, pos.z); // 略高于地面，贴地表现
         transform.rotation = Quaternion.Euler(-90f, 0f, 0f);   // 平躺
         transform.localScale = Vector3.one * (radius * 2f * 0.7f); // 初始略小于判定圈
 
-        var c = _sr.color;
-        c.a = 1f;
-        _sr.color = c;
+        _sr.color = new Color(1.15f, 1.15f, 1.15f, 1f); // 微提亮：地面深色上更醒目
     }
 
     private void Update()
@@ -51,11 +59,9 @@ public class BlastEffect : MonoBehaviour
         _age += Time.deltaTime;
         float k = Mathf.Clamp01(_age / Lifetime);
 
-        // 扩散（0.7x → 1.15x 判定直径）+ 渐隐
-        transform.localScale = Vector3.one * (_radius * 2f * Mathf.Lerp(0.7f, 1.15f, k));
-        var c = _sr.color;
-        c.a = 1f - k;
-        _sr.color = c;
+        // 扩散（0.7x → endMult 判定直径）+ 渐隐（1−k²：前中期保持实色，末段快速隐去）
+        transform.localScale = Vector3.one * (_radius * 2f * Mathf.Lerp(0.7f, _endMult, k));
+        _sr.color = new Color(1.15f, 1.15f, 1.15f, 1f - k * k);
 
         if (_age >= Lifetime)
         {

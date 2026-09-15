@@ -8,7 +8,8 @@ using UnityEngine;
 /// </summary>
 public class WeaponOrbit : WeaponBase
 {
-    public int Count = 1; // 环绕刀刃数量
+    public int Count = 1;        // 环绕刀刃数量
+    public float SpeedMult = 1f; // 转速倍率（升级项）
 
     private readonly List<Orbiter> _orbs = new List<Orbiter>();
 
@@ -45,6 +46,7 @@ public class WeaponOrbit : WeaponBase
         {
             _orbs[i].DamagePerHit = FinalDamage;
             _orbs[i].OrbitRadius = Range;
+            _orbs[i].OrbitSpeed = 200f * SpeedMult; // 转速升级
         }
     }
 

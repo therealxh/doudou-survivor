@@ -32,6 +32,7 @@ public class WeaponGarlic : WeaponBase
 
         // 空间哈希邻近查询（Day 6 起）→ CircleHit 精筛
         gm.Grid.Query(pos, r + 0.45f, Candidates);
+        int hitCount = 0;
         for (int i = 0; i < Candidates.Count; i++)
         {
             var e = Candidates[i];
@@ -43,7 +44,14 @@ public class WeaponGarlic : WeaponBase
             {
                 // 不击退：大蒜若击退会把怪推出自己的光环（自相矛盾）；击退交给飞刀
                 e.TakeDamage(FinalDamage, Vector3.zero);
+                hitCount++;
             }
+        }
+
+        // 冲击波特效（Day 8：命中才播放，空场安静）
+        if (hitCount > 0)
+        {
+            BlastEffect.ShowShockwave(pos, r);
         }
     }
 
