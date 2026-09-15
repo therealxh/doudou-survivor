@@ -10,7 +10,7 @@ public class CameraRig : MonoBehaviour
 
     [Header("偏移参数")]
     public float Distance = 14f;    // 相机到目标的直线距离
-    public float Pitch = 55f;       // 俯角
+    public float Pitch = 40f;       // 俯角（2.5D 斜视角）
     public float FollowSharp = 10f; // 跟随平滑系数（越大越紧）
 
     private Vector3 _offset;

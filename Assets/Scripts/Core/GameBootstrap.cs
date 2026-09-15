@@ -75,7 +75,7 @@ public static class GameBootstrap
         cam.orthographicSize = 6f; // 垂直半高 6 世界单位
         cam.clearFlags = CameraClearFlags.SolidColor;
         cam.backgroundColor = new Color(0.10f, 0.12f, 0.16f);
-        cam.transform.rotation = Quaternion.Euler(55f, 0f, 0f); // 俯角 55°
+        cam.transform.rotation = Quaternion.Euler(40f, 0f, 0f); // 俯角 40°（2.5D 斜视角，减少直立 sprite 的纵向压缩）
 
         if (cam.GetComponent<CameraRig>() == null)
         {
@@ -171,12 +171,12 @@ public static class GameBootstrap
     private static void BuildTemplates()
     {
         // 子弹模板（Day 5 起全手算碰撞，无需 Collider/Rigidbody）
-        KnifeTemplate = MakeSprite("arrow", 0.6f);
+        KnifeTemplate = MakeSprite("arrow", 0.6f, false);
         KnifeTemplate.AddComponent<Projectile>();
         KnifeTemplate.SetActive(false); // 模板不参与游戏，仅供池实例化
 
         // 敌人模板（Spawner 批量生成用）
-        EnemyTemplate = MakeSprite("enemy", 0.9f);
+        EnemyTemplate = MakeSprite("enemy", 1.0f, true);
         EnemyTemplate.AddComponent<Enemy>();
         EnemyTemplate.SetActive(false);
 
@@ -195,7 +195,7 @@ public static class GameBootstrap
         tm.alignment = TextAlignment.Center;
         tm.color = Color.white;
         DamageNumberTemplate.GetComponent<MeshRenderer>().sharedMaterial = tm.font.material;
-        DamageNumberTemplate.transform.rotation = Quaternion.Euler(55f, 0f, 0f); // 面向相机
+        DamageNumberTemplate.transform.rotation = Quaternion.Euler(40f, 0f, 0f); // 面向相机
         DamageNumberTemplate.AddComponent<DamageNumber>();
         DamageNumberTemplate.SetActive(false);
     }
@@ -212,7 +212,7 @@ public static class GameBootstrap
     // ---------- 玩家 ----------
     private static void BuildPlayer()
     {
-        Player = MakeSprite("player", 1.15f);
+        Player = MakeSprite("player", 1.5f, true);
         Player.transform.position = new Vector3(0f, 0.5f, 0f);
 
         var pc = Player.AddComponent<PlayerController>();
@@ -247,21 +247,42 @@ public static class GameBootstrap
         return sp;
     }
 
-    /// <summary>创建平躺的 Sprite 实体（俯视视角）；size = 最长边的世界尺寸（米）。</summary>
-    public static GameObject MakeSprite(string spriteName, float size)
+    /// <summary>
+    /// 创建 2.5D Sprite 实体；size = 最长边的世界尺寸（米）。
+    /// standing=true：直立小人（脚踩地面；朝向用 flipX，不旋转）；false：中心锚平躺（如箭矢，由整体旋转控制）。
+    /// </summary>
+    public static GameObject MakeSprite(string spriteName, float size, bool standing = false)
     {
-        var go = new GameObject(spriteName);
-        var sr = go.AddComponent<SpriteRenderer>();
+        var root = new GameObject(spriteName);
+        var visual = new GameObject("Visual");
+        visual.transform.SetParent(root.transform, false);
+
+        var sr = visual.AddComponent<SpriteRenderer>();
         sr.sprite = LoadSprite(spriteName);
+
+        float h = 1f;
         if (sr.sprite != null)
         {
-            // 按最长边映射：细长贴图（如箭矢）不会被拉成巨物
             float longest = Mathf.Max(sr.sprite.bounds.size.x, sr.sprite.bounds.size.y);
             float s = size / longest;
-            go.transform.localScale = new Vector3(s, s, s);
+            visual.transform.localScale = new Vector3(s, s, s);
+            h = sr.sprite.bounds.size.y * s; // 缩放后的世界高
         }
-        go.transform.rotation = Quaternion.Euler(-90f, 0f, 0f); // 平躺：图“上”朝 -z
-        return go;
+
+        if (standing)
+        {
+            // 直立：图的底边贴地面顶（实体 y=0.5、地面顶 y=0.25 → 底边 local y = -0.25）
+            visual.transform.localPosition = new Vector3(0f, -0.25f + h * 0.5f, 0f);
+            // 脚下投影阴影（强化 2.5D 立体感）
+            var shadow = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            shadow.name = "Shadow";
+            Object.Destroy(shadow.GetComponent<Collider>());
+            shadow.transform.SetParent(root.transform, false);
+            shadow.transform.localPosition = new Vector3(0f, -0.245f, 0f);
+            shadow.transform.localScale = new Vector3(0.62f, 0.004f, 0.62f);
+            shadow.GetComponent<Renderer>().sharedMaterial = MakeMaterial(new Color(0.05f, 0.10f, 0.07f));
+        }
+        return root;
     }
 
     /// <summary>平躺 Sprite 的朝向旋转：图“上”指向 dir 的水平方向。</summary>

@@ -20,7 +20,7 @@ public class PlayerStats : MonoBehaviour
     private void Awake()
     {
         Hp = MaxHp;
-        _sr = GetComponent<SpriteRenderer>();
+        _sr = GetComponentInChildren<SpriteRenderer>();
     }
 
     private void Update()

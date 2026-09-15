@@ -22,7 +22,7 @@ public class Enemy : MonoBehaviour
 
     private void Awake()
     {
-        _sr = GetComponent<SpriteRenderer>();
+        _sr = GetComponentInChildren<SpriteRenderer>();
     }
 
     private void OnEnable()
@@ -96,7 +96,11 @@ public class Enemy : MonoBehaviour
         if (dir.sqrMagnitude > 0.0001f)
         {
             transform.position += dir.normalized * (MoveSpeed * Time.deltaTime);
-            transform.rotation = GameBootstrap.FlatRotation(dir);
+            // 2.5D：朝向用左右翻转表现（sprite 保持直立，不旋转）
+            if (_sr != null)
+            {
+                _sr.flipX = dir.x < 0f;
+            }
         }
     }
 

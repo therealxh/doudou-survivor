@@ -79,7 +79,7 @@ public class EnemySpawner : MonoBehaviour
         // 从池取怪（Day 5 起：池 Get 替代 Instantiate）
         var enemy = GameBootstrap.EnemyPool.Get();
         enemy.transform.position = pos;
-        enemy.transform.rotation = Quaternion.Euler(-90f, 0f, 0f); // 平躺基准（随后由追击逻辑转向）
+        enemy.transform.rotation = Quaternion.identity; // 2.5D：直立 sprite，不旋转
         enemy.Hp = CurrentHp();
         enemy.MoveSpeed = EnemySpeed;
         enemy.Radius = EnemyRadius;
