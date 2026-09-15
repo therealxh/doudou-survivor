@@ -22,6 +22,9 @@ public static class GameBootstrap
     /// <summary>伤害飘字模板（TextMesh）。</summary>
     public static GameObject DamageNumberTemplate { get; private set; }
 
+    /// <summary>敌人模板（Spawner 批量生成用）。</summary>
+    public static GameObject EnemyTemplate { get; private set; }
+
     /// <summary>浮动摇杆（Bootstrap 创建后注入 PlayerController）。</summary>
     public static FloatingJoystick Joystick { get; private set; }
 
@@ -47,7 +50,6 @@ public static class GameBootstrap
         BuildUI();       // Canvas + EventSystem + 摇杆 + 提示
         BuildTemplates(); // 子弹模板
         BuildPlayer();   // 玩家 + 武器 + 摇杆引用
-        BuildTestEnemies(); // Day 1 临时：5 只测试怪（Day 4 起由 Spawner 接管）
     }
 
     // ---------- 相机 ----------
@@ -78,7 +80,10 @@ public static class GameBootstrap
     {
         if (GameManager.I == null)
         {
-            new GameObject("GameManager").AddComponent<GameManager>();
+            var gmGo = new GameObject("GameManager");
+            gmGo.AddComponent<GameManager>();
+            gmGo.AddComponent<EnemySpawner>(); // Day 4 起由刷怪管理器接管敌人生成
+            gmGo.AddComponent<PerfStats>();    // 性能数据采集（每 5s 输出 Console）
         }
     }
 
@@ -165,6 +170,11 @@ public static class GameBootstrap
         KnifeTemplate.AddComponent<Projectile>();
         KnifeTemplate.SetActive(false); // 模板不参与游戏，仅供实例化
 
+        // 敌人模板（Spawner 批量生成用）
+        EnemyTemplate = MakeBox("EnemyTemplate", new Vector3(0.8f, 0.8f, 0.8f), new Color(0.85f, 0.32f, 0.30f), keepCollider: true);
+        EnemyTemplate.AddComponent<Enemy>();
+        EnemyTemplate.SetActive(false);
+
         // 经验宝石模板
         GemTemplate = MakeBox("GemTemplate", new Vector3(0.3f, 0.3f, 0.3f), new Color(0.25f, 0.85f, 0.90f));
         GemTemplate.AddComponent<ExperienceGem>();
@@ -203,18 +213,6 @@ public static class GameBootstrap
 
         Player.AddComponent<PlayerStats>();
         Player.AddComponent<WeaponKnife>();
-    }
-
-    // ---------- 测试怪（Day 1 临时） ----------
-    private static void BuildTestEnemies()
-    {
-        for (int i = 0; i < 5; i++)
-        {
-            float ang = i * Mathf.PI * 2f / 5f;
-            var e = MakeBox("Enemy_" + i, new Vector3(0.8f, 0.8f, 0.8f), new Color(0.85f, 0.32f, 0.30f), keepCollider: true);
-            e.transform.position = new Vector3(Mathf.Cos(ang) * 10f, 0.5f, Mathf.Sin(ang) * 10f);
-            e.AddComponent<Enemy>();
-        }
     }
 
     // ---------- 公共工具 ----------

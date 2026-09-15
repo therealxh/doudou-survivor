@@ -34,6 +34,19 @@ public class CameraRig : MonoBehaviour
         transform.position = Vector3.Lerp(transform.position, GetTargetPos() + _offset, Time.deltaTime * FollowSharp);
     }
 
+    /// <summary>视野外刷怪环半径：可视区域对角半径 + 余量（供 Spawner 使用）。</summary>
+    public float GetSpawnRingRadius(float margin = 2f)
+    {
+        var cam = GetComponent<Camera>();
+        if (cam == null)
+        {
+            return 10f;
+        }
+        float halfH = cam.orthographicSize;
+        float halfW = halfH * cam.aspect;
+        return Mathf.Sqrt(halfW * halfW + halfH * halfH) + margin;
+    }
+
     private Vector3 GetTargetPos()
     {
         return Target != null ? Target.position : Vector3.zero;
