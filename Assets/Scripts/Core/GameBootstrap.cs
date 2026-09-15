@@ -28,6 +28,12 @@ public static class GameBootstrap
     /// <summary>爆炸视觉模板（Day 8：手雷爆炸圈）。</summary>
     public static GameObject BlastTemplate { get; private set; }
 
+    /// <summary>回旋镖模板（Day 8 新武器）。</summary>
+    public static GameObject BoomerangTemplate { get; private set; }
+
+    /// <summary>环绕飞刃模板（Day 8 新武器）。</summary>
+    public static GameObject OrbitTemplate { get; private set; }
+
     /// <summary>敌人模板（Spawner 批量生成用）。</summary>
     public static GameObject EnemyTemplate { get; private set; }
 
@@ -38,6 +44,8 @@ public static class GameBootstrap
     public static ObjectPool<DamageNumber> DamageNumberPool { get; private set; }
     public static ObjectPool<Grenade> GrenadePool { get; private set; } // Day 7：手雷
     public static ObjectPool<BlastEffect> BlastPool { get; private set; } // Day 8：爆炸视觉
+    public static ObjectPool<Boomerang> BoomerangPool { get; private set; } // Day 8：回旋镖
+    public static ObjectPool<Orbiter> OrbitPool { get; private set; } // Day 8：环绕飞刃
 
     /// <summary>浮动摇杆（Bootstrap 创建后注入 PlayerController）。</summary>
     public static FloatingJoystick Joystick { get; private set; }
@@ -261,6 +269,16 @@ public static class GameBootstrap
         BlastTemplate.AddComponent<BlastEffect>();
         BlastTemplate.SetActive(false);
 
+        // 回旋镖模板（Day 8：飞出折返、穿透）
+        BoomerangTemplate = MakeSprite("boomerang", 0.6f, false);
+        BoomerangTemplate.AddComponent<Boomerang>();
+        BoomerangTemplate.SetActive(false);
+
+        // 环绕飞刃模板（Day 8：绕玩家旋转）
+        OrbitTemplate = MakeSprite("dart", 0.75f, false);
+        OrbitTemplate.AddComponent<Orbiter>();
+        OrbitTemplate.SetActive(false);
+
         // 伤害飘字模板（TextMesh 世界空间文本）
         DamageNumberTemplate = new GameObject("DamageNumberTemplate");
         var tm = DamageNumberTemplate.AddComponent<TextMesh>();
@@ -285,6 +303,8 @@ public static class GameBootstrap
         DamageNumberPool = new ObjectPool<DamageNumber>(() => Object.Instantiate(DamageNumberTemplate).GetComponent<DamageNumber>(), 30);
         GrenadePool = new ObjectPool<Grenade>(() => Object.Instantiate(GrenadeTemplate).GetComponent<Grenade>(), 10);
         BlastPool = new ObjectPool<BlastEffect>(() => Object.Instantiate(BlastTemplate).GetComponent<BlastEffect>(), 8);
+        BoomerangPool = new ObjectPool<Boomerang>(() => Object.Instantiate(BoomerangTemplate).GetComponent<Boomerang>(), 10);
+        OrbitPool = new ObjectPool<Orbiter>(() => Object.Instantiate(OrbitTemplate).GetComponent<Orbiter>(), 6);
     }
 
     // ---------- 玩家 ----------

@@ -26,12 +26,16 @@ public class LevelSystem : MonoBehaviour
     private WeaponKnife _knife;
     private WeaponGarlic _garlic;
     private WeaponGrenade _grenade;
+    private WeaponOrbit _orbit;         // Day 8 新武器（未获得 = null）
+    private WeaponBoomerang _boom;      // Day 8 新武器（未获得 = null）
 
     // —— 升级项等级（限上限 + 面板计数） ——
     private int _knifeDmg, _knifeSpeed, _knifeMulti;
     private bool _evolved;
     private int _garlicDmg, _garlicRadius;
     private int _grenadeDmg;
+    private int _orbitDmg, _orbitCount;
+    private int _boomDmg;
     private int _passAtk, _passMove, _passHp, _passPick;
 
     private readonly List<UpgradeOption> _pool = new List<UpgradeOption>(16);
@@ -51,6 +55,8 @@ public class LevelSystem : MonoBehaviour
         _knife = p.GetComponent<WeaponKnife>();
         _garlic = p.GetComponent<WeaponGarlic>();   // 开局未获得 → null
         _grenade = p.GetComponent<WeaponGrenade>(); // 开局未获得 → null
+        _orbit = p.GetComponent<WeaponOrbit>();     // 开局未获得 → null
+        _boom = p.GetComponent<WeaponBoomerang>();  // 开局未获得 → null
     }
 
     /// <summary>拾取宝石时调用：满经验则升级并弹出三选一。</summary>
@@ -114,9 +120,9 @@ public class LevelSystem : MonoBehaviour
             {
                 _pool.Add(new UpgradeOption
                 {
-                    Title = "飞刀 · 伤害 +5",
+                    Title = "飞刀 · 伤害 +3",
                     Desc = "弩箭伤害提升（当前等级 " + _knifeDmg + "/3）",
-                    Apply = () => { _knifeDmg++; _knife.AddDamage(5f); },
+                    Apply = () => { _knifeDmg++; _knife.AddDamage(3f); },
                 });
             }
             if (_knifeSpeed < 3)
@@ -164,9 +170,9 @@ public class LevelSystem : MonoBehaviour
             {
                 _pool.Add(new UpgradeOption
                 {
-                    Title = "大蒜 · 伤害 +3",
+                    Title = "大蒜 · 伤害 +2",
                     Desc = "光环伤害提升（当前等级 " + _garlicDmg + "/3）",
-                    Apply = () => { _garlicDmg++; _garlic.AddDamage(3f); },
+                    Apply = () => { _garlicDmg++; _garlic.AddDamage(2f); },
                 });
             }
             if (_garlicRadius < 2)
@@ -194,9 +200,61 @@ public class LevelSystem : MonoBehaviour
         {
             _pool.Add(new UpgradeOption
             {
-                Title = "手雷 · 伤害 +5",
+                Title = "手雷 · 伤害 +3",
                 Desc = "爆炸伤害提升（当前等级 " + _grenadeDmg + "/3）",
-                Apply = () => { _grenadeDmg++; _grenade.AddDamage(5f); },
+                Apply = () => { _grenadeDmg++; _grenade.AddDamage(3f); },
+            });
+        }
+
+        // —— 环绕飞刃（Day 8 新武器，升级获取） ——
+        if (_orbit == null)
+        {
+            _pool.Add(new UpgradeOption
+            {
+                Title = "获得武器：环绕飞刃",
+                Desc = "刀刃环绕身周，持续割伤靠近的敌人",
+                Apply = () => { _orbit = GameBootstrap.Player.AddComponent<WeaponOrbit>(); },
+            });
+        }
+        else
+        {
+            if (_orbitDmg < 3)
+            {
+                _pool.Add(new UpgradeOption
+                {
+                    Title = "环绕飞刃 · 伤害 +2",
+                    Desc = "扫击伤害提升（当前等级 " + _orbitDmg + "/3）",
+                    Apply = () => { _orbitDmg++; _orbit.AddDamage(2f); },
+                });
+            }
+            if (_orbitCount < 2)
+            {
+                _pool.Add(new UpgradeOption
+                {
+                    Title = "环绕飞刃 · 数量 +1",
+                    Desc = "环绕刀刃更多（当前等级 " + _orbitCount + "/2）",
+                    Apply = () => { _orbitCount++; _orbit.Count++; },
+                });
+            }
+        }
+
+        // —— 回旋镖（Day 8 新武器，升级获取） ——
+        if (_boom == null)
+        {
+            _pool.Add(new UpgradeOption
+            {
+                Title = "获得武器：回旋镖",
+                Desc = "掷出回旋镖，飞出折返、全程穿透",
+                Apply = () => { _boom = GameBootstrap.Player.AddComponent<WeaponBoomerang>(); },
+            });
+        }
+        else if (_boomDmg < 3)
+        {
+            _pool.Add(new UpgradeOption
+            {
+                Title = "回旋镖 · 伤害 +3",
+                Desc = "穿透伤害提升（当前等级 " + _boomDmg + "/3）",
+                Apply = () => { _boomDmg++; _boom.AddDamage(3f); },
             });
         }
 
