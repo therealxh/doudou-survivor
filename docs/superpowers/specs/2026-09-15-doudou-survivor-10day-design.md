@@ -118,7 +118,9 @@ Assets/
 public class ObjectPool<T> where T : Component
 {
     private readonly Stack<T> _idle = new();
-    public T Get()   => _idle.Count > 0 ? _idle.Pop() : Create();
+    private readonly Func<T> _factory;
+    public ObjectPool(Func<T> factory, int prewarm)   // 预热 N 个入池
+    public T Get()      // 取出 + 激活；空则用 factory 新建
     public void Release(T o) { o.gameObject.SetActive(false); _idle.Push(o); }
 }
 ```
@@ -128,12 +130,17 @@ public class ObjectPool<T> where T : Component
 ```csharp
 public static class CircleHit
 {
-    public static bool Hit(Vector2 a, float ra, Vector2 b, float rb)
-    { float r = ra + rb; return (a - b).sqrMagnitude <= r * r; }
+    // 只比较水平面（XZ）：本游戏所有单位高度固定，y 不参与距离
+    public static bool Hit(Vector3 a, float ra, Vector3 b, float rb)
+    {
+        float dx = a.x - b.x, dz = a.z - b.z;
+        float r = ra + rb;
+        return dx * dx + dz * dz <= r * r; // 平方比较，避免开方
+    }
 }
 ```
 - 使用点：① 子弹 vs 怪 ② 大蒜 vs 怪 ③ 怪 vs 玩家 ④ 宝石磁吸范围判断
-- 一律用 `sqrMagnitude` 比较，避免开方
+- 一律用距离平方比较，避免开方；不依赖物理系统（timeScale 加速与暂停步进下均可靠）
 
 ### 5.3 空间哈希 SpatialHashGrid（约 100 行）
 - 格子边长 1m；key = `((long)cellX << 32) | (uint)cellY`

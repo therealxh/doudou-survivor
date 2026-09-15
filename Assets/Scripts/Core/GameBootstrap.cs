@@ -25,6 +25,12 @@ public static class GameBootstrap
     /// <summary>敌人模板（Spawner 批量生成用）。</summary>
     public static GameObject EnemyTemplate { get; private set; }
 
+    /// <summary>对象池（三件套①）：怪 / 子弹 / 宝石 / 飘字。</summary>
+    public static ObjectPool<Enemy> EnemyPool { get; private set; }
+    public static ObjectPool<Projectile> KnifePool { get; private set; }
+    public static ObjectPool<ExperienceGem> GemPool { get; private set; }
+    public static ObjectPool<DamageNumber> DamageNumberPool { get; private set; }
+
     /// <summary>浮动摇杆（Bootstrap 创建后注入 PlayerController）。</summary>
     public static FloatingJoystick Joystick { get; private set; }
 
@@ -48,7 +54,8 @@ public static class GameBootstrap
         BuildManagers(); // 必须先于敌人生成：敌人 OnEnable 时要向 GameManager 注册
         BuildGround();
         BuildUI();       // Canvas + EventSystem + 摇杆 + 提示
-        BuildTemplates(); // 子弹模板
+        BuildTemplates(); // 各类对象模板
+        BuildPools();     // 对象池（四类）
         BuildPlayer();   // 玩家 + 武器 + 摇杆引用
     }
 
@@ -162,16 +169,13 @@ public static class GameBootstrap
     // ---------- 对象模板 ----------
     private static void BuildTemplates()
     {
-        // 子弹模板：Rigidbody(kinematic) + Trigger Collider，供朴素版 Physics 命中（Day 5 弃用 Physics）
-        KnifeTemplate = MakeBox("KnifeTemplate", new Vector3(0.4f, 0.25f, 0.4f), new Color(0.95f, 0.92f, 0.6f), keepCollider: true);
-        KnifeTemplate.GetComponent<Collider>().isTrigger = true;
-        var rb = KnifeTemplate.AddComponent<Rigidbody>();
-        rb.isKinematic = true;
+        // 子弹模板（Day 5 起全手算碰撞，无需 Collider/Rigidbody）
+        KnifeTemplate = MakeBox("KnifeTemplate", new Vector3(0.4f, 0.25f, 0.4f), new Color(0.95f, 0.92f, 0.6f));
         KnifeTemplate.AddComponent<Projectile>();
-        KnifeTemplate.SetActive(false); // 模板不参与游戏，仅供实例化
+        KnifeTemplate.SetActive(false); // 模板不参与游戏，仅供池实例化
 
         // 敌人模板（Spawner 批量生成用）
-        EnemyTemplate = MakeBox("EnemyTemplate", new Vector3(0.8f, 0.8f, 0.8f), new Color(0.85f, 0.32f, 0.30f), keepCollider: true);
+        EnemyTemplate = MakeBox("EnemyTemplate", new Vector3(0.8f, 0.8f, 0.8f), new Color(0.85f, 0.32f, 0.30f));
         EnemyTemplate.AddComponent<Enemy>();
         EnemyTemplate.SetActive(false);
 
@@ -195,23 +199,29 @@ public static class GameBootstrap
         DamageNumberTemplate.SetActive(false);
     }
 
+    // ---------- 对象池 ----------
+    private static void BuildPools()
+    {
+        EnemyPool = new ObjectPool<Enemy>(() => Object.Instantiate(EnemyTemplate).GetComponent<Enemy>(), 150);
+        KnifePool = new ObjectPool<Projectile>(() => Object.Instantiate(KnifeTemplate).GetComponent<Projectile>(), 50);
+        GemPool = new ObjectPool<ExperienceGem>(() => Object.Instantiate(GemTemplate).GetComponent<ExperienceGem>(), 150);
+        DamageNumberPool = new ObjectPool<DamageNumber>(() => Object.Instantiate(DamageNumberTemplate).GetComponent<DamageNumber>(), 30);
+    }
+
     // ---------- 玩家 ----------
     private static void BuildPlayer()
     {
-        Player = MakeBox("Player", new Vector3(1f, 1f, 1f), new Color(0.30f, 0.55f, 0.95f), keepCollider: true);
+        Player = MakeBox("Player", new Vector3(1f, 1f, 1f), new Color(0.30f, 0.55f, 0.95f));
         Player.transform.position = new Vector3(0f, 0.5f, 0f);
-
-        // 朴素版接触伤害：玩家 = Trigger Collider + Kinematic Rigidbody（Day 5 弃 Physics）
-        Player.GetComponent<Collider>().isTrigger = true;
-        var rb = Player.AddComponent<Rigidbody>();
-        rb.isKinematic = true;
 
         var pc = Player.AddComponent<PlayerController>();
         pc.Radius = 0.5f;
         pc.MoveSpeed = 5f;
         pc.Joystick = Joystick;
 
-        Player.AddComponent<PlayerStats>();
+        var stats = Player.AddComponent<PlayerStats>();
+        stats.Radius = 0.5f; // 手算接触判定半径
+
         Player.AddComponent<WeaponKnife>();
     }
 

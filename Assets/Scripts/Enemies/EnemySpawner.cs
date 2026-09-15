@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// 刷怪管理器：视野外圆环刷怪；间隔随时间递减；怪属性随时间增强（复合）；同屏上限 300。
-/// Day 4 朴素版：Instantiate/Destroy（Day 5 换对象池）。
+/// Day 5 起怪来自对象池。
 /// </summary>
 public class EnemySpawner : MonoBehaviour
 {
@@ -76,10 +76,10 @@ public class EnemySpawner : MonoBehaviour
         Vector3 pos = center + new Vector3(Mathf.Cos(ang) * ringRadius, 0f, Mathf.Sin(ang) * ringRadius);
         pos.y = 0.5f;
 
-        var go = Instantiate(GameBootstrap.EnemyTemplate, pos, Quaternion.identity); // Day 5 换对象池
-        go.SetActive(true);
-
-        var enemy = go.GetComponent<Enemy>();
+        // 从池取怪（Day 5 起：池 Get 替代 Instantiate）
+        var enemy = GameBootstrap.EnemyPool.Get();
+        enemy.transform.position = pos;
+        enemy.transform.rotation = Quaternion.identity;
         enemy.Hp = CurrentHp();
         enemy.MoveSpeed = EnemySpeed;
         enemy.Radius = EnemyRadius;

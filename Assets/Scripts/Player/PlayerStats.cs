@@ -1,13 +1,15 @@
 using UnityEngine;
 
 /// <summary>
-/// 玩家属性与生存状态：HP / 受击无敌帧 / 拾取范围。
+/// 玩家属性与生存状态：HP / 受击无敌帧 / 拾取范围 / 接触伤害判定。
+/// Day 5 起接触判定改手算（CircleHit 遍历敌人，弃 Physics 触发）。
 /// 被动加成（攻击/移速/拾取）Day 8 加入。
 /// </summary>
 public class PlayerStats : MonoBehaviour
 {
     public float MaxHp = 100f;
     public float Hp { get; private set; }
+    public float Radius = 0.5f;         // 接触判定半径
     public float PickupRange = 2.5f;    // 磁铁吸附范围（Day 7 使用）
     public float InvulDuration = 0.5f;  // 受击后无敌时间（秒）
 
@@ -20,8 +22,8 @@ public class PlayerStats : MonoBehaviour
     {
         Hp = MaxHp;
         var r = GetComponent<Renderer>();
-        _baseColor = r.sharedMaterial.GetColor("_BaseColor"); // 基色从共享材质读
-        _mat = r.material; // 访问 .material 克隆出独享实例（受击闪红用；合批影响在 Day 6 讨论）
+        _baseColor = r.sharedMaterial.GetColor("_BaseColor");
+        _mat = r.material; // 独享实例：受击闪红用
     }
 
     private void Update()
@@ -43,15 +45,27 @@ public class PlayerStats : MonoBehaviour
                 _mat.SetColor("_BaseColor", _baseColor);
             }
         }
+
+        CheckContactDamage();
     }
 
-    // 朴素版接触判定：怪碰到玩家触发（玩家为 Trigger + Kinematic Rigidbody，Day 5 换手算距离）
-    private void OnTriggerStay(Collider other)
+    /// <summary>手算接触判定：贴身怪对玩家造成伤害（无敌帧限频）。</summary>
+    private void CheckContactDamage()
     {
-        var enemy = other.GetComponent<Enemy>();
-        if (enemy != null)
+        var enemies = GameManager.I.Enemies;
+        Vector3 pos = transform.position;
+        for (int i = enemies.Count - 1; i >= 0; i--)
         {
-            TakeDamage(enemy.TouchDamage);
+            var e = enemies[i];
+            if (e == null)
+            {
+                continue;
+            }
+            if (CircleHit.Hit(pos, Radius, e.transform.position, e.Radius))
+            {
+                TakeDamage(e.TouchDamage);
+                return; // 每帧最多触发一次（无敌帧进一步限频）
+            }
         }
     }
 

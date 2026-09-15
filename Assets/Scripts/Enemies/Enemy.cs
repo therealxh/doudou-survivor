@@ -2,7 +2,8 @@ using UnityEngine;
 
 /// <summary>
 /// 敌人：追击玩家 + 受击反馈（闪白 / 击退 / 飘字 / 死亡掉宝石）。
-/// Day 3 朴素实现：每怪独享材质实例（刻意破坏合批，Day 6 换 MaterialPropertyBlock）。
+/// Day 5 起由对象池管理生命周期（Get/Release 替代 Instantiate/Destroy）。
+/// 闪白仍为"每怪独享材质实例"（Day 6 换 MaterialPropertyBlock）。
 /// </summary>
 public class Enemy : MonoBehaviour
 {
@@ -32,6 +33,15 @@ public class Enemy : MonoBehaviour
         if (GameManager.I != null)
         {
             GameManager.I.Enemies.Add(this);
+        }
+
+        // 池化复用：重置受击状态（否则复用时会带着上一轮的死状态）
+        _flashTimer = 0f;
+        _stunTimer = 0f;
+        _knockVel = Vector3.zero;
+        if (_mat != null)
+        {
+            _mat.SetColor("_BaseColor", _baseColor);
         }
     }
 
@@ -92,7 +102,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    /// <summary>受击：扣血 + 飘字；未死亡则闪白/击退，死亡则掉宝石。</summary>
+    /// <summary>受击：扣血 + 飘字；未死亡则闪白/击退，死亡则掉宝石并回收。</summary>
     public void TakeDamage(float dmg, Vector3 knockDir)
     {
         Hp -= dmg;
@@ -124,10 +134,10 @@ public class Enemy : MonoBehaviour
             GameManager.I.KillCount++;
         }
 
-        // 掉落经验宝石
-        var gem = Instantiate(GameBootstrap.GemTemplate, transform.position, Quaternion.identity);
-        gem.SetActive(true);
+        // 掉落经验宝石（池取用）
+        var gem = GameBootstrap.GemPool.Get();
+        gem.transform.position = transform.position;
 
-        Destroy(gameObject); // Day 5 改为池回收
+        GameBootstrap.EnemyPool.Release(this); // 回收（OnDisable 自动从名单注销）
     }
 }

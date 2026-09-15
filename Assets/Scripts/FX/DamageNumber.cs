@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// 伤害飘字：上飘 + 渐隐，0.6 秒后自动销毁。
-/// Day 3 朴素版：Instantiate/Destroy（Day 5 换对象池；字符串直接 ToString，不做缓存）。
+/// 伤害飘字：上飘 + 渐隐，0.6 秒后回池。
+/// Day 5 起由对象池管理（Get/Release 替代 Instantiate/Destroy）。
 /// </summary>
 public class DamageNumber : MonoBehaviour
 {
@@ -17,13 +17,23 @@ public class DamageNumber : MonoBehaviour
         _text = GetComponent<TextMesh>();
     }
 
-    /// <summary>在指定世界位置弹出一条伤害数字。</summary>
+    /// <summary>在指定世界位置弹出一条伤害数字（池取用）。</summary>
     public static void Show(Vector3 worldPos, float amount)
     {
-        var template = GameBootstrap.DamageNumberTemplate;
-        var go = Object.Instantiate(template, worldPos, template.transform.rotation);
-        go.SetActive(true);
-        go.GetComponent<TextMesh>().text = ((int)amount).ToString();
+        var dn = GameBootstrap.DamageNumberPool.Get();
+        dn.Setup(worldPos, amount);
+    }
+
+    /// <summary>池复用入口：重置生命周期与显示。</summary>
+    public void Setup(Vector3 worldPos, float amount)
+    {
+        _age = 0f;
+        transform.position = worldPos;
+        _text.text = ((int)amount).ToString(); // 字符串直接 ToString（不做缓存——最小复杂度约定）
+
+        var c = _text.color;
+        c.a = 1f;
+        _text.color = c;
     }
 
     private void Update()
@@ -43,7 +53,7 @@ public class DamageNumber : MonoBehaviour
 
         if (_age >= Lifetime)
         {
-            Destroy(gameObject); // Day 5 改为池回收
+            GameBootstrap.DamageNumberPool.Release(this);
         }
     }
 }
