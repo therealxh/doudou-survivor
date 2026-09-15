@@ -17,8 +17,8 @@ public class WeaponOrbit : WeaponBase
     {
         DisplayName = "环绕飞刃";
         Cooldown = 0.5f;
-        Range = 1.55f; // 环绕半径（Day 8 配平：1.7→1.55，更贴身）
-        Damage = 5f;   // 每 0.4s 的扫击伤害（Day 8 配平：3→5，基础值提升）
+        Range = 1.8f;  // 环绕半径（Day 8 配平：1.55→1.8，加大护卫圈）
+        Damage = 5f;   // 每 0.2s 的扫击伤害
     }
 
     protected override void Fire()
@@ -46,7 +46,7 @@ public class WeaponOrbit : WeaponBase
         {
             _orbs[i].DamagePerHit = FinalDamage;
             _orbs[i].OrbitRadius = Range;
-            _orbs[i].OrbitSpeed = 200f * SpeedMult; // 转速升级
+            _orbs[i].OrbitSpeed = 260f * SpeedMult; // 转速升级（基础 260）
         }
     }
 

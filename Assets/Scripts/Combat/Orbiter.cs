@@ -8,10 +8,10 @@ using UnityEngine;
 public class Orbiter : MonoBehaviour
 {
     public float DamagePerHit = 5f;
-    public float HitInterval = 0.2f; // 扫击间隔（Day 8 二次配平：0.4→0.2，令刀刃经过即命中）
-    public float OrbitRadius = 1.55f;
-    public float OrbitSpeed = 200f;  // 度/秒
-    public float Radius = 0.55f;     // 命中判定半径（Day 8 配平：0.35→0.55，贴脸怪也能砍到）
+    public float HitInterval = 0.05f; // 接触判定（Day 8 深修：0.2→0.05——点目标经过窗口仅 0.15s，周期扫击命中率天然低下）
+    public float OrbitRadius = 1.8f;  // 环绕半径（Day 8 配平：1.55→1.8，加大护卫圈）
+    public float OrbitSpeed = 260f;   // 度/秒（Day 8 配平：200→260，基础转速提升）
+    public float Radius = 0.6f;       // 命中判定半径（0.6：半径扩大后贴脸怪仍能砍到）
     public float PhaseDeg;           // 初始相位（多枚均分，由 WeaponOrbit 设置）
 
     private float _angle;
@@ -68,9 +68,8 @@ public class Orbiter : MonoBehaviour
             }
             if (CircleHit.Hit(transform.position, Radius, e.transform.position, e.Radius))
             {
-                Vector3 dir = e.transform.position - transform.position;
-                dir.y = 0f;
-                e.TakeDamage(DamagePerHit, dir);
+                // 无击退（Day 8 深修：击退会把怪推出刀刃路径，自减命中率）
+                e.TakeDamage(DamagePerHit, Vector3.zero);
             }
         }
     }

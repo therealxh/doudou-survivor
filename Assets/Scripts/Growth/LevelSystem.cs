@@ -41,6 +41,14 @@ public class LevelSystem : MonoBehaviour
     private readonly List<UpgradeOption> _pool = new List<UpgradeOption>(16);
     private List<UpgradeOption> _choices;
 
+    // —— 升级步进表（Day 8 配平：前小后大——低投入起步、高投入爆发） ——
+    private static readonly float[] MainDmgSteps = { 2f, 3f, 5f };   // 主动系武器伤害（飞刀/手雷/回旋镖）
+    private static readonly float[] SubDmgSteps = { 1f, 2f, 4f };    // 自动系武器伤害（大蒜/环绕飞刃）
+    private static readonly float[] AtkSteps = { 0.05f, 0.10f, 0.20f };
+    private static readonly float[] MoveSteps = { 0.05f, 0.08f, 0.12f };
+    private static readonly float[] PickSteps = { 0.05f, 0.10f, 0.20f };
+    private static readonly float[] HpSteps = { 10f, 20f, 30f };
+
     public IReadOnlyList<UpgradeOption> Choices => _choices;
 
     private void Start()
@@ -120,9 +128,9 @@ public class LevelSystem : MonoBehaviour
             {
                 _pool.Add(new UpgradeOption
                 {
-                    Title = "飞刀 · 伤害 +3",
+                    Title = "飞刀 · 伤害 +" + MainDmgSteps[_knifeDmg],
                     Desc = "弩箭伤害提升（当前等级 " + _knifeDmg + "/3）",
-                    Apply = () => { _knifeDmg++; _knife.AddDamage(3f); },
+                    Apply = () => { _knife.AddDamage(MainDmgSteps[_knifeDmg]); _knifeDmg++; },
                 });
             }
             if (_knifeSpeed < 3)
@@ -170,9 +178,9 @@ public class LevelSystem : MonoBehaviour
             {
                 _pool.Add(new UpgradeOption
                 {
-                    Title = "大蒜 · 伤害 +2",
+                    Title = "大蒜 · 伤害 +" + SubDmgSteps[_garlicDmg],
                     Desc = "光环伤害提升（当前等级 " + _garlicDmg + "/3）",
-                    Apply = () => { _garlicDmg++; _garlic.AddDamage(2f); },
+                    Apply = () => { _garlic.AddDamage(SubDmgSteps[_garlicDmg]); _garlicDmg++; },
                 });
             }
             if (_garlicRadius < 2)
@@ -200,9 +208,9 @@ public class LevelSystem : MonoBehaviour
         {
             _pool.Add(new UpgradeOption
             {
-                Title = "手雷 · 伤害 +3",
+                Title = "手雷 · 伤害 +" + MainDmgSteps[_grenadeDmg],
                 Desc = "爆炸伤害提升（当前等级 " + _grenadeDmg + "/3）",
-                Apply = () => { _grenadeDmg++; _grenade.AddDamage(3f); },
+                Apply = () => { _grenade.AddDamage(MainDmgSteps[_grenadeDmg]); _grenadeDmg++; },
             });
         }
 
@@ -222,9 +230,9 @@ public class LevelSystem : MonoBehaviour
             {
                 _pool.Add(new UpgradeOption
                 {
-                    Title = "环绕飞刃 · 伤害 +3",
+                    Title = "环绕飞刃 · 伤害 +" + SubDmgSteps[_orbitDmg],
                     Desc = "扫击伤害提升（当前等级 " + _orbitDmg + "/3）",
-                    Apply = () => { _orbitDmg++; _orbit.AddDamage(3f); },
+                    Apply = () => { _orbit.AddDamage(SubDmgSteps[_orbitDmg]); _orbitDmg++; },
                 });
             }
             if (_orbitCount < 2)
@@ -261,9 +269,9 @@ public class LevelSystem : MonoBehaviour
         {
             _pool.Add(new UpgradeOption
             {
-                Title = "回旋镖 · 伤害 +3",
+                Title = "回旋镖 · 伤害 +" + MainDmgSteps[_boomDmg],
                 Desc = "穿透伤害提升（当前等级 " + _boomDmg + "/3）",
-                Apply = () => { _boomDmg++; _boom.AddDamage(3f); },
+                Apply = () => { _boom.AddDamage(MainDmgSteps[_boomDmg]); _boomDmg++; },
             });
         }
 
@@ -272,36 +280,36 @@ public class LevelSystem : MonoBehaviour
         {
             _pool.Add(new UpgradeOption
             {
-                Title = "强化 · 攻击力 +10%",
+                Title = "强化 · 攻击力 +" + (int)(AtkSteps[_passAtk] * 100f) + "%",
                 Desc = "所有武器伤害提升（当前等级 " + _passAtk + "/3）",
-                Apply = () => { _passAtk++; _stats.AttackMult += 0.1f; },
+                Apply = () => { _stats.AttackMult += AtkSteps[_passAtk]; _passAtk++; },
             });
         }
         if (_passMove < 3)
         {
             _pool.Add(new UpgradeOption
             {
-                Title = "强化 · 移速 +10%",
+                Title = "强化 · 移速 +" + (int)(MoveSteps[_passMove] * 100f) + "%",
                 Desc = "移动更快（当前等级 " + _passMove + "/3）",
-                Apply = () => { _passMove++; _pc.MoveSpeed *= 1.1f; },
+                Apply = () => { _pc.MoveSpeed *= 1f + MoveSteps[_passMove]; _passMove++; },
             });
         }
         if (_passHp < 3)
         {
             _pool.Add(new UpgradeOption
             {
-                Title = "强化 · 生命 +20",
+                Title = "强化 · 生命 +" + HpSteps[_passHp],
                 Desc = "上限提升并立即回复（当前等级 " + _passHp + "/3）",
-                Apply = () => { _passHp++; _stats.MaxHp += 20f; _stats.Heal(20f); },
+                Apply = () => { _stats.MaxHp += HpSteps[_passHp]; _stats.Heal(HpSteps[_passHp]); _passHp++; },
             });
         }
         if (_passPick < 3)
         {
             _pool.Add(new UpgradeOption
             {
-                Title = "强化 · 拾取范围 +20%",
+                Title = "强化 · 拾取范围 +" + (int)(PickSteps[_passPick] * 100f) + "%",
                 Desc = "宝石吸附更远（当前等级 " + _passPick + "/3）",
-                Apply = () => { _passPick++; _stats.PickupMult += 0.2f; },
+                Apply = () => { _stats.PickupMult += PickSteps[_passPick]; _passPick++; },
             });
         }
     }
