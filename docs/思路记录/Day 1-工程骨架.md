@@ -34,6 +34,8 @@
 1. 工程模板错成 2D → 用 Unity Hub 缓存里的官方 `urp-blank` 模板 + 命令行重建（`Unity.exe -batchmode -createProject -cloneFromTemplate`）。
 2. Write 工具写"多层新目录"时偶尔报失败但文件实际已落盘（重试提示 no change 即说明已存在）——先建目录再写更稳。
 3. Unity 批处理与编辑器**不能同时**打开同一工程（编译验证前先确认没有编辑器在跑）。
+4. **敌人出生点悬空 bug**：`Vector3(cos, 0.5, sin) * 10` 会把 y 也乗 10 → 敌人浮在 5 米高。修复：只把 x/z 乘半径（分量分别计算）。教训：对 Vector3 整体缩放前先想清楚每个分量要不要一起变。
+5. **Unity MCP 中文路径坑（环境级，值得记住）**：MCP for Unity 的 server（Python）用系统默认编码（中文系统=GBK）读 UTF-8 状态文件（内含中文工程路径）→ UnicodeDecodeError 被静默吞掉 → MCP 永远“找不到 Unity 实例”。修复：server 源码的 `open()` 补 `encoding='utf-8'` + mcp.json 加 `PYTHONUTF8=1`。教训：Windows 上处理非 ASCII 路径的工具链都要显式 UTF-8。
 
 ## 关键数字
 
@@ -46,5 +48,6 @@
 | 测试怪 | 5 只，环状半径 10 | Day 1 临时，Day 4 由 Spawner 接管 |
 
 ## 验证证据
-- 编译：batchmode 输出 `Tundra build success`，无 `error CS`。
-- 运行行为：待验收（WASD 移动 + 怪持续追击）。
+- 编译：batchmode 输出 `Tundra build success`，无 `error CS`；编辑器内 Console 零错误。
+- 运行时（MCP 自动采样）：5 只敌人注册 ✓；敌人贴地 y=0.50 ✓（修复后）；追击方向正确（距离 10 → 9.91 递减）✓；相机位置 (0, 12, -8) 符合参数设计 ✓。
+- WASD 手感：用户验收（注：编辑器 Edit → Preferences → General → Interaction Mode 需为 No Throttling，否则失焦时游戏不推进）。

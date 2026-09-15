@@ -95,7 +95,7 @@ public static class GameBootstrap
         {
             float ang = i * Mathf.PI * 2f / 5f;
             var e = MakeBox("Enemy_" + i, new Vector3(0.8f, 0.8f, 0.8f), new Color(0.85f, 0.32f, 0.30f));
-            e.transform.position = new Vector3(Mathf.Cos(ang), 0.5f, Mathf.Sin(ang)) * 10f;
+            e.transform.position = new Vector3(Mathf.Cos(ang) * 10f, 0.5f, Mathf.Sin(ang) * 10f);
             e.AddComponent<Enemy>();
         }
     }
