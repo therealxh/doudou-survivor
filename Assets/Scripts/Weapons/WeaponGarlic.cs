@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -7,6 +8,9 @@ using UnityEngine;
 /// </summary>
 public class WeaponGarlic : WeaponBase
 {
+    /// <summary>查询候选缓冲（静态共享：武器主线程串行执行）</summary>
+    private static readonly List<Enemy> Candidates = new List<Enemy>();
+
     private void Awake()
     {
         DisplayName = "大蒜";
@@ -26,14 +30,14 @@ public class WeaponGarlic : WeaponBase
         Vector3 pos = transform.position;
         float r = Range;
 
-        // 反向遍历：TakeDamage 可能触发击杀→回收→从名单移除
-        var enemies = gm.Enemies;
-        for (int i = enemies.Count - 1; i >= 0; i--)
+        // 空间哈希邻近查询（Day 6 起）→ CircleHit 精筛
+        gm.Grid.Query(pos, r + 0.45f, Candidates);
+        for (int i = 0; i < Candidates.Count; i++)
         {
-            var e = enemies[i];
-            if (e == null)
+            var e = Candidates[i];
+            if (e == null || !e.gameObject.activeSelf)
             {
-                continue;
+                continue; // 已回收（可能被前一次连锁击杀）
             }
             if (CircleHit.Hit(pos, r, e.transform.position, e.Radius))
             {

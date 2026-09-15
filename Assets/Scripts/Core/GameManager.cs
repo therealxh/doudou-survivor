@@ -26,6 +26,9 @@ public class GameManager : MonoBehaviour
     /// <summary>存活敌人名单：Enemy 在 OnEnable 注册、OnDisable 注销。</summary>
     public readonly List<Enemy> Enemies = new List<Enemy>();
 
+    /// <summary>空间哈希（三件套②）：每帧末重建，供子弹/大蒜做邻近查询。</summary>
+    public readonly SpatialHashGrid Grid = new SpatialHashGrid();
+
     /// <summary>单局时长上限（秒）：到时按胜利结算。</summary>
     public float RunDuration = 600f;
 
@@ -46,6 +49,15 @@ public class GameManager : MonoBehaviour
         if (ElapsedTime >= RunDuration)
         {
             EndRun(true); // 存活到时间上限 = 胜利
+        }
+    }
+
+    private void LateUpdate()
+    {
+        // 每帧末重建空间哈希（所有 gameplay Update 之后；查询方晚一帧使用，行为等价）
+        if (State == GameState.Playing)
+        {
+            Grid.Rebuild(Enemies);
         }
     }
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -14,6 +15,9 @@ public class Projectile : MonoBehaviour
     private Vector3 _dir;
     private Vector3 _start;
     private bool _active;
+
+    /// <summary>查询候选缓冲（静态共享：子弹在主线程串行执行，无重入）</summary>
+    private static readonly List<Enemy> Candidates = new List<Enemy>();
 
     private void OnEnable()
     {
@@ -42,18 +46,19 @@ public class Projectile : MonoBehaviour
 
         transform.position += _dir * (speed * Time.deltaTime);
 
-        // 手算命中：遍历敌人名单（Day 5 全表遍历；Day 6 换空间哈希）。
+        // 手算命中：空间哈希邻近查询（Day 6 起，替代全表遍历）→ CircleHit 精筛。
         // 命中集合中选【最近】的一只：与武器索敌选择一致，保证火力集中
         // （否则每发打在随机一只身上、伤害雨露均沾，高血量怪永远打不死）。
-        var enemies = GameManager.I.Enemies;
+        GameManager.I.Grid.Query(transform.position, Radius + 0.45f, Candidates);
+
         Enemy hit = null;
         float bestSqr = float.MaxValue;
-        for (int i = enemies.Count - 1; i >= 0; i--)
+        for (int i = 0; i < Candidates.Count; i++)
         {
-            var e = enemies[i];
-            if (e == null)
+            var e = Candidates[i];
+            if (e == null || !e.gameObject.activeSelf)
             {
-                continue;
+                continue; // 已回收（可能被本帧早先的子弹击杀）
             }
             if (CircleHit.Hit(transform.position, Radius, e.transform.position, e.Radius))
             {
