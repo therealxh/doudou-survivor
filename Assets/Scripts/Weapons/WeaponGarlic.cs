@@ -14,9 +14,9 @@ public class WeaponGarlic : WeaponBase
     private void Awake()
     {
         DisplayName = "大蒜";
-        Cooldown = 0.5f;
-        Range = 2.5f;   // 光环半径
-        Damage = 5f;
+        Cooldown = 1.5f;  // Day 8 配平：0.5 → 1.5s（大范围脉冲定位，避免与环绕飞刃的贴身持续混淆）
+        Range = 3.75f;    // 光环半径（Day 8 配平：2.5 → 3.75，×1.5）
+        Damage = 8f;      // 单波伤害（Day 8 配平：5 → 8）
     }
 
     protected override void Fire()
