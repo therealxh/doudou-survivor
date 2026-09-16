@@ -182,8 +182,43 @@ public static class GameBootstrap
         hint.alignment = TextAnchor.UpperCenter;
         hint.color = new Color(1f, 1f, 1f, 0.75f);
         hint.text = "WASD / 按住屏幕拖动 移动";
+        hintGo.AddComponent<HintAutoHide>(); // 升级/结算面板弹出时自动隐藏提示
 
         BuildLevelUpPanel(canvasGo.transform); // Day 7：升级三选一面板（默认隐藏）
+        BuildResultPanel(canvasGo.transform);  // Day 9/10：结算面板（默认隐藏）
+    }
+
+    // ---------- 结算面板（Day 9/10） ----------
+    private static void BuildResultPanel(Transform canvas)
+    {
+        var panelRoot = NewUIObject("ResultPanel", canvas);
+        StretchFull((RectTransform)panelRoot.transform);
+        // 置顶子 Canvas 模式（吸取升级面板被摇杆层挡住射线的教训）
+        var topCanvas = panelRoot.AddComponent<Canvas>();
+        topCanvas.overrideSorting = true;
+        topCanvas.sortingOrder = 20; // 高于升级面板（10）
+        panelRoot.AddComponent<GraphicRaycaster>();
+        var mask = panelRoot.AddComponent<Image>();
+        mask.color = new Color(0f, 0f, 0f, 0.72f);
+
+        var panel = panelRoot.AddComponent<ResultPanel>();
+
+        var title = NewText(panelRoot.transform, "", 76, new Vector2(0f, 400f), Color.white);
+        var stats = NewText(panelRoot.transform, "", 44, new Vector2(0f, 90f), new Color(0.85f, 0.9f, 0.95f));
+        ((RectTransform)stats.transform).sizeDelta = new Vector2(820f, 320f); // 多行统计文本
+
+        var bGo = NewUIObject("RestartButton", panelRoot.transform);
+        var bRt = (RectTransform)bGo.transform;
+        bRt.sizeDelta = new Vector2(560f, 170f);
+        bRt.anchoredPosition = new Vector2(0f, -300f);
+        var img = bGo.AddComponent<Image>();
+        img.color = new Color(0.16f, 0.42f, 0.28f, 0.96f);
+        var btn = bGo.AddComponent<Button>();
+        NewText(bGo.transform, "重新开始", 54, Vector2.zero, Color.white);
+        btn.onClick.AddListener(panel.OnRestart);
+
+        panel.Wire(panelRoot, title, stats, btn);
+        panelRoot.SetActive(false);
     }
 
     // ---------- 升级三选一面板（Day 7） ----------

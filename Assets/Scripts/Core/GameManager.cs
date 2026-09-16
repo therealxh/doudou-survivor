@@ -78,10 +78,14 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
     }
 
-    /// <summary>结束本局（死亡或胜利）。UI 通过轮询 State 感知。</summary>
+    /// <summary>结束本局（死亡或胜利）：时停并弹出结算面板。</summary>
     public void EndRun(bool win)
     {
         State = GameState.GameOver;
         Time.timeScale = 0f;
+        if (ResultPanel.I != null)
+        {
+            ResultPanel.I.Show(win); // 结算面板（Day 9/10：此前缺失导致“玩到 10 分钟游戏像卡死”）
+        }
     }
 }
