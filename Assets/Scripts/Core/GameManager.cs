@@ -3,6 +3,7 @@ using UnityEngine;
 
 public enum GameState
 {
+    Title,     // 标题界面（等待玩家点击开始）
     Playing,   // 正常游玩
     LevelUp,   // 升级时停
     GameOver   // 结算（死亡或胜利）
@@ -15,7 +16,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager I { get; private set; }
 
-    public GameState State { get; private set; } = GameState.Playing;
+    public GameState State { get; private set; } = GameState.Title;
 
     /// <summary>本局已进行的秒数（仅 Playing 态累加）。</summary>
     public float ElapsedTime { get; private set; }
@@ -62,6 +63,12 @@ public class GameManager : MonoBehaviour
         {
             Grid.Rebuild(Enemies);
         }
+    }
+
+    /// <summary>从标题界面开始新一局。</summary>
+    public void StartGame()
+    {
+        State = GameState.Playing;
     }
 
     /// <summary>进入升级选卡：时停。</summary>

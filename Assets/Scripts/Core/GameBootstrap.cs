@@ -186,6 +186,40 @@ public static class GameBootstrap
 
         BuildLevelUpPanel(canvasGo.transform); // Day 7：升级三选一面板（默认隐藏）
         BuildResultPanel(canvasGo.transform);  // Day 9/10：结算面板（默认隐藏）
+        BuildTitlePanel(canvasGo.transform);   // Day 9：标题界面（默认显示，点击开始进入游戏）
+    }
+
+    // ---------- 标题界面（Day 9） ----------
+    private static void BuildTitlePanel(Transform canvas)
+    {
+        var panelRoot = NewUIObject("TitlePanel", canvas);
+        StretchFull((RectTransform)panelRoot.transform);
+        var topCanvas = panelRoot.AddComponent<Canvas>();
+        topCanvas.overrideSorting = true;
+        topCanvas.sortingOrder = 30; // 高于结算面板（20）
+        panelRoot.AddComponent<GraphicRaycaster>();
+        var mask = panelRoot.AddComponent<Image>();
+        mask.color = new Color(0.05f, 0.07f, 0.10f, 0.92f);
+
+        var panel = panelRoot.AddComponent<TitlePanel>();
+
+        NewText(panelRoot.transform, "豆豆幸存者", 110, new Vector2(0f, 420f), new Color(0.55f, 0.85f, 1f));
+        NewText(panelRoot.transform, "活过 10 分钟，成为最后的幸存者", 40, new Vector2(0f, 295f), new Color(0.75f, 0.80f, 0.85f));
+
+        var bGo = NewUIObject("StartButton", panelRoot.transform);
+        var bRt = (RectTransform)bGo.transform;
+        bRt.sizeDelta = new Vector2(560f, 170f);
+        bRt.anchoredPosition = new Vector2(0f, -90f);
+        var img = bGo.AddComponent<Image>();
+        img.color = new Color(0.20f, 0.46f, 0.72f, 0.96f);
+        var btn = bGo.AddComponent<Button>();
+        NewText(bGo.transform, "开始游戏", 56, Vector2.zero, Color.white);
+        btn.onClick.AddListener(panel.OnStartGame);
+
+        NewText(panelRoot.transform, "WASD / 按住屏幕拖动移动 · 自动攻击", 34, new Vector2(0f, -330f), new Color(0.60f, 0.66f, 0.72f));
+
+        panel.Wire(panelRoot);
+        panelRoot.SetActive(true); // 标题界面初始显示
     }
 
     // ---------- 结算面板（Day 9/10） ----------
@@ -439,7 +473,12 @@ public static class GameBootstrap
         {
             return m;
         }
-        m = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        // 构建安全的 shader 来源：Resources 模板材质（被强制包含）；
+        // 若只用 Shader.Find 且无资产引用，打包后 shader 会被剥离 → 全屏品红
+        var baseMat = Resources.Load<Material>("BuiltinLit");
+        m = baseMat != null
+            ? new Material(baseMat)
+            : new Material(Shader.Find("Universal Render Pipeline/Lit"));
         m.SetColor("_BaseColor", c);
         MatCache[c] = m;
         return m;

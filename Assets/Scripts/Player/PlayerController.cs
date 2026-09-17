@@ -19,6 +19,12 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        // 仅游戏进行中响应移动（标题界面 / 升级时停 / 结算时冻结）
+        if (GameManager.I == null || GameManager.I.State != GameState.Playing)
+        {
+            return;
+        }
+
         Vector2 dir = ReadInput();
         if (dir.sqrMagnitude > 1f)
         {
