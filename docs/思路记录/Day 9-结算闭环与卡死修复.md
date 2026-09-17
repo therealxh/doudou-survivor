@@ -35,6 +35,20 @@
 - 失败路径（EndRun(false)）→ 标题"游戏结束" ✓；截图 `docs/art/结算面板预览.png`（ScreenCapture 才拍得到 UGUI——Camera.Render 拍不到 Overlay UI，记录备忘）。
 - HintAutoHide：Playing 显示 True / 结算显示 False ✓。
 
+## 补充（Day 9 下午）：标题界面 + PC 构建 + 两个打包专属坑
+
+### 标题界面（TitlePanel）
+- 状态机新增 `Title`（GameManager 默认状态）；Bootstrap 构建标题面板（置顶子 Canvas order=30，默认显示）。
+- “开始游戏”→ `StartGame()` → Playing；结算“重新开始”→ 重载场景 → 自然回到标题。
+- PlayerController 补了“非 Playing 不响应输入”守卫（此前标题界面也能走）。
+
+### PC 构建（核心交付：打包实测）
+1. 构建成功（manage_build，windows64）→ 启动冒烟 → 进程存活 ✓。
+2. **坑①：竖屏**——`defaultInterfaceOrientation` 只对移动平台有效；PC 竖屏 = `defaultScreenWidth/Height 540×960 + fullScreenMode=Windowed`（反射设置，枚举名在该编译环境不可见）。
+3. **坑②：全屏品红（重大）**——打包后画面全品红 = **`Shader.Find("URP/Lit")` 在构建版返回 null**：全代码构建无任何资产引用该 shader → 构建时被剥离。修复：**Resources 里放一个引用 URP/Lit 的模板材质（强制包含）**，`MakeMaterial` 改为 `new Material(Resources.Load<Material>("BuiltinLit"))`。
+   - 中间弯路：把 URP/Lit 加进 Always Included Shaders → **变体爆炸（132 万个）构建失败**——教训：Always Included 不能塞大 shader，要用“被引用的资产”或 ShaderVariantCollection。
+4. 终验：竖屏窗口 540×960 + 标题界面完整渲染（截图 `docs/art/打包运行预览.png`）。
+
 ## 关键数字
 | 项 | 值 |
 |---|---|
