@@ -49,6 +49,12 @@
    - 中间弯路：把 URP/Lit 加进 Always Included Shaders → **变体爆炸（132 万个）构建失败**——教训：Always Included 不能塞大 shader，要用“被引用的资产”或 ShaderVariantCollection。
 4. 终验：竖屏窗口 540×960 + 标题界面完整渲染（截图 `docs/art/打包运行预览.png`）。
 
+### 补充 2：Android 出包（移动端身份坐实）
+- 构建链：切 Android 平台 → 包名 `com.therealxh.doudousurvivor` → **CI 构建**（新增 `Assets/Editor/AndroidBuilder.cs` + `Unity.exe -batchmode -executeMethod`，不依赖 MCP）。
+- **大坑：Android 工具链不支持非 ASCII 工程路径**（`Android Tools don't work properly with non-ASCII paths`）——MCP 构建与命令行构建均在此失败。
+  - 解法：**Junction（目录联接）**——`F:\DoudouSurvivor → 中文工程目录`，用英文路径构建，工程本体不动。
+- 产出：`doudou-survivor.apk`（25.5MB；竖屏 + 触屏拖拽摇杆原生适配），已上传 GitHub Release。
+
 ## 关键数字
 | 项 | 值 |
 |---|---|
